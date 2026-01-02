@@ -112,8 +112,11 @@ function App({ user, onLogout }: AppProps) {
     const wheelHandler = (e: WheelEvent) => {
       e.preventDefault();
 
-      if (e.ctrlKey || e.metaKey) {
-        // Zoom
+      if (e.shiftKey) {
+        // Pan with Shift + Scroll
+        setViewport(prev => ({ ...prev, x: prev.x - e.deltaX, y: prev.y - e.deltaY }));
+      } else {
+        // Zoom with normal scroll
         const rect = canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
@@ -129,9 +132,6 @@ function App({ user, onLogout }: AppProps) {
 
           setViewport({ x: newX, y: newY, k: newK });
         }
-      } else {
-        // Pan
-        setViewport(prev => ({ ...prev, x: prev.x - e.deltaX, y: prev.y - e.deltaY }));
       }
     };
 
