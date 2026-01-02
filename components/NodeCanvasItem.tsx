@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Trash2, CheckCircle, Settings } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, Settings, Box } from 'lucide-react';
 import { NodeInstance, NodeType } from '../types';
 
 interface NodeCanvasItemProps {
@@ -37,7 +37,8 @@ const getHandles = (type: NodeType) => {
 };
 
 export const NodeCanvasItem: React.FC<NodeCanvasItemProps> = ({ node, isSelected, onSelect, onDelete, onMouseDown, onConnectStart, onConnectEnd, onQuickAdd, onSmartConfig, isGuidedMode, isDimmed, description, displayName, simulationStatus = 'idle' }) => {
-    const Icon = node.icon;
+    // Fallback to Box icon if node.icon is undefined
+    const Icon = node.icon || Box;
     const handles = getHandles(node.type);
 
     // Use fixed pixel width w-[240px] instead of relative w-60 to avoid font-size scaling issues
@@ -68,10 +69,10 @@ export const NodeCanvasItem: React.FC<NodeCanvasItemProps> = ({ node, isSelected
 
             {/* Input Handle - Left Center */}
             <div
-                className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center cursor-crosshair z-30 group/input"
+                className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center cursor-crosshair z-40 opacity-0 group-hover:opacity-100 transition-opacity"
                 onMouseUp={(e) => { e.stopPropagation(); onConnectEnd(e, node.id); }}
             >
-                <div className="w-3 h-3 bg-slate-600 rounded-full border-2 border-[#0B0E14] group-hover/input:bg-white group-hover/input:scale-125 transition-all shadow-sm"></div>
+                <div className="w-2 h-2 bg-slate-400 rounded-full border border-slate-600 hover:bg-indigo-400 hover:scale-150 transition-all"></div>
             </div>
 
             <div className="flex items-center gap-3 pointer-events-none h-full">
@@ -124,13 +125,13 @@ export const NodeCanvasItem: React.FC<NodeCanvasItemProps> = ({ node, isSelected
             {handles.map(handle => (
                 <div
                     key={handle.id}
-                    className="absolute -right-3 w-6 h-6 flex items-center justify-center cursor-crosshair z-30 group/output"
+                    className="absolute -right-2 w-4 h-4 flex items-center justify-center cursor-crosshair z-40 opacity-0 group-hover:opacity-100 transition-opacity"
                     style={{ top: handle.top, transform: 'translateY(-50%)' }}
                     onMouseDown={(e) => { e.stopPropagation(); onConnectStart(e, node.id, handle.id); }}
                 >
-                    <div className={`w-3 h-3 ${handle.color} rounded-full border-2 border-[#0B0E14] group-hover/output:scale-125 transition-all relative shadow-sm`}>
+                    <div className={`w-2 h-2 ${handle.color} rounded-full border border-slate-600 hover:scale-150 transition-all`}>
                         {handle.label && (
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-bold text-slate-400 bg-black/80 backdrop-blur px-1.5 py-0.5 rounded pointer-events-none whitespace-nowrap opacity-0 group-hover/output:opacity-100 border border-slate-700">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-bold text-white bg-slate-800 px-1.5 py-0.5 rounded pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100">
                                 {handle.label}
                             </span>
                         )}

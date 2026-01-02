@@ -595,36 +595,34 @@ function App({ user, onLogout }: AppProps) {
             <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
           </marker>
         </defs>
-        {connections.map(conn => {
-          const source = nodes.find(n => n.id === conn.source);
-          const target = nodes.find(n => n.id === conn.target);
-          if (!source || !target) return null;
+        <g transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.k})`}>
+          {connections.map(conn => {
+            const source = nodes.find(n => n.id === conn.source);
+            const target = nodes.find(n => n.id === conn.target);
+            if (!source || !target) return null;
 
-          // Simple straight line or bezier logic
-          // Simplified for brevity in this replacement
-          const sourceX = source.position.x + 240; // Width of node
-          const sourceY = source.position.y + 36; // Mid-height
-          const targetX = target.position.x;
-          const targetY = target.position.y + 36;
+            // Calculate connection points
+            const sourceX = source.position.x + 240; // Width of node
+            const sourceY = source.position.y + 36; // Mid-height
+            const targetX = target.position.x;
+            const targetY = target.position.y + 36;
 
-          const d = `M ${sourceX} ${sourceY} C ${sourceX + 50} ${sourceY}, ${targetX - 50} ${targetY}, ${targetX} ${targetY}`;
+            // Bezier curve for smooth connections
+            const d = `M ${sourceX} ${sourceY} C ${sourceX + 50} ${sourceY}, ${targetX - 50} ${targetY}, ${targetX} ${targetY}`;
 
-          return (
-            <path
-              key={conn.id}
-              d={d}
-              stroke="#64748b"
-              strokeWidth="2"
-              fill="none"
-              markerEnd="url(#arrowhead)"
-              className="transition-all duration-300"
-            />
-          );
-        })}
-        {connectingNodeId && connectingHandleId && (
-          // Render active dragging line
-          <path d="" /> // Placeholder
-        )}
+            return (
+              <path
+                key={conn.id}
+                d={d}
+                stroke="#64748b"
+                strokeWidth="2"
+                fill="none"
+                markerEnd="url(#arrowhead)"
+                className="transition-all duration-300 hover:stroke-indigo-400"
+              />
+            );
+          })}
+        </g>
       </svg>
     );
   };
