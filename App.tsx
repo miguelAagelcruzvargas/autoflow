@@ -465,17 +465,18 @@ function App({ user, onLogout }: AppProps) {
     const template = WORKFLOW_TEMPLATES.find(t => t.id === templateId) || SAMPLE_TEMPLATES.find(t => t.id === templateId);
     if (template) {
       // Regenerate IDs to avoid conflicts
-      const idMap: Record<string, string> = {};
-      const newNodes = template.nodes.map(n => {
-        const newId = generateId();
-        idMap[n.id] = newId;
-        return { ...n, id: newId };
-      });
+      // Templates use array indices for connections, so we map by index
+      const newNodes = template.nodes.map(n => ({
+        ...n,
+        id: generateId()
+      }));
+
+      // Map connections using array indices
       const newConnections = template.connections.map(c => ({
         ...c,
         id: generateId(),
-        source: idMap[c.source],
-        target: idMap[c.target]
+        source: newNodes[c.source as number]?.id,
+        target: newNodes[c.target as number]?.id
       }));
 
       setNodes(newNodes);
