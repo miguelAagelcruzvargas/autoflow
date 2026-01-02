@@ -114,12 +114,12 @@ export const NodeCanvasItem: React.FC<NodeCanvasItemProps> = ({ node, isSelected
                 </div>
             )}
 
-            {/* Config Indicator */}
-            {Object.keys(node.config).length > 0 && (
+            {/* Config Indicator - Removed for cleaner look */}
+            {/* {Object.keys(node.config).length > 0 && (
                 <div className="absolute -top-2 -right-2 bg-emerald-600 text-white rounded-full p-0.5 border-2 border-[#151921] z-30">
                     <CheckCircle size={10} />
                 </div>
-            )}
+            )} */}
 
             {/* Output Handles */}
             {handles.map(handle => (
