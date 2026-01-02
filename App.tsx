@@ -592,8 +592,8 @@ function App({ user, onLogout }: AppProps) {
     return (
       <svg className="absolute inset-0 overflow-visible pointer-events-none z-10">
         <defs>
-          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#475569" />
           </marker>
         </defs>
         <g transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.k})`}>
@@ -615,11 +615,11 @@ function App({ user, onLogout }: AppProps) {
               <path
                 key={conn.id}
                 d={d}
-                stroke="#64748b"
-                strokeWidth="2"
+                stroke="#475569"
+                strokeWidth="1.5"
                 fill="none"
                 markerEnd="url(#arrowhead)"
-                className="transition-all duration-300 hover:stroke-indigo-400"
+                className="transition-all duration-200 hover:stroke-indigo-400 hover:stroke-[2]"
               />
             );
           })}
