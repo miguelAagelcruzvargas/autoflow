@@ -1,0 +1,5 @@
+{
+  "name": "AutoFlow Pro",
+  "description": "An AI-powered visual builder for n8n workflows. Describe your automation needs, and AutoFlow generates the node structure and configuration for you.",
+  "requestFramePermissions": []
+}
