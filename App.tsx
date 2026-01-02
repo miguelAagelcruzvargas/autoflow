@@ -688,11 +688,13 @@ function App({ user, onLogout }: AppProps) {
           {/* Global Guide Bot */}
           {isGuidedMode && !selectedNodeId && <GuideBot t={t} lang={lang} variant="global" focusedField={null} />}
 
+          {/* Connection Lines */}
+          {renderConnections()}
+
           {/* Canvas Content */}
           <div className="absolute origin-top-left will-change-transform" style={{ transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.k})` }}>
             {nodes.length > 0 && (
               <>
-                {renderConnections()}
                 {nodes.map((node) => (
                   <NodeCanvasItem
                     key={node.id}
