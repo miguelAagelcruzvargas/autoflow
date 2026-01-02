@@ -111,7 +111,28 @@ function App({ user, onLogout }: AppProps) {
 
     const wheelHandler = (e: WheelEvent) => {
       e.preventDefault();
-      handleWheel(e as any);
+
+      if (e.ctrlKey || e.metaKey) {
+        // Zoom
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const delta = -e.deltaY;
+        const scaleAmount = delta > 0 ? 0.1 : -0.1;
+        const newK = Math.max(0.1, Math.min(5, viewport.k + scaleAmount));
+
+        if (newK !== viewport.k) {
+          const scaleChange = newK - viewport.k;
+          const newX = viewport.x - (mouseX - viewport.x) * (scaleChange / viewport.k);
+          const newY = viewport.y - (mouseY - viewport.y) * (scaleChange / viewport.k);
+
+          setViewport({ x: newX, y: newY, k: newK });
+        }
+      } else {
+        // Pan
+        setViewport(prev => ({ ...prev, x: prev.x - e.deltaX, y: prev.y - e.deltaY }));
+      }
     };
 
     canvas.addEventListener('wheel', wheelHandler, { passive: false });
@@ -818,7 +839,13 @@ function App({ user, onLogout }: AppProps) {
 
       {/* Quick Add Menu - Fixed positioning outside canvas */}
       {quickAdd.visible && (
-        <div className="fixed inset-0 z-50 pointer-events-none">
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setQuickAdd({ ...quickAdd, visible: false })}
+          />
+          {/* Menu */}
           <QuickAddMenu
             position={{ x: quickAdd.x, y: quickAdd.y }}
             onClose={() => setQuickAdd({ ...quickAdd, visible: false })}
@@ -826,7 +853,7 @@ function App({ user, onLogout }: AppProps) {
             searchRef={quickSearchRef}
             nodeNames={content.nodeNames}
           />
-        </div>
+        </>
       )}
 
       {/* MODALS & OVERLAYS */}

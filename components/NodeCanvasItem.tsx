@@ -89,7 +89,12 @@ export const NodeCanvasItem: React.FC<NodeCanvasItemProps> = ({ node, isSelected
             {/* Action Buttons */}
             <div className="absolute top-2 right-2 flex gap-1 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
-                    onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        onDelete();
+                    }}
                     className="p-1.5 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-lg transition-colors"
                 >
                     <Trash2 size={14} />
