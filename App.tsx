@@ -616,10 +616,10 @@ function App({ user, onLogout }: AppProps) {
                 key={conn.id}
                 d={d}
                 stroke="#475569"
-                strokeWidth="1.5"
+                strokeWidth="1"
                 fill="none"
                 markerEnd="url(#arrowhead)"
-                className="transition-all duration-200 hover:stroke-indigo-400 hover:stroke-[2]"
+                className="transition-all duration-200 hover:stroke-indigo-400 hover:stroke-[1.5]"
               />
             );
           })}
