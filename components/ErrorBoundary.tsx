@@ -1,0 +1,134 @@
+import React, { Component, ReactNode, ErrorInfo } from 'react';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+
+interface Props {
+    children: ReactNode;
+    fallbackUI?: ReactNode;
+}
+
+interface State {
+    hasError: boolean;
+    error: Error | null;
+    errorInfo: ErrorInfo | null;
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+    constructor(props: Props) {
+        super(props);
+        this.state = {
+            hasError: false,
+            error: null,
+            errorInfo: null
+        };
+    }
+
+    static getDerivedStateFromError(error: Error): Partial<State> {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+        // Log error to console (in production, send to error tracking service like Sentry)
+        console.error('🚨 Error Boundary Caught:', error, errorInfo);
+
+        this.setState({
+            error,
+            errorInfo
+        });
+    }
+
+    handleReload = () => {
+        window.location.reload();
+    };
+
+    handleGoHome = () => {
+        window.location.href = '/';
+    };
+
+    handleReset = () => {
+        this.setState({
+            hasError: false,
+            error: null,
+            errorInfo: null
+        });
+    };
+
+    render() {
+        if (this.state.hasError) {
+            // Custom fallback UI if provided
+            if (this.props.fallbackUI) {
+                return this.props.fallbackUI;
+            }
+
+            // Default error UI
+            return (
+                <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center p-4">
+                    <div className="max-w-2xl w-full bg-[#11141a] border border-red-500/20 rounded-xl p-8 shadow-2xl">
+                        {/* Icon */}
+                        <div className="flex justify-center mb-6">
+                            <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center">
+                                <AlertTriangle className="w-10 h-10 text-red-500" />
+                            </div>
+                        </div>
+
+                        {/* Title */}
+                        <h1 className="text-2xl font-bold text-white text-center mb-2">
+                            ¡Oops! Algo salió mal
+                        </h1>
+                        <p className="text-slate-400 text-center mb-6">
+                            La aplicación encontró un error inesperado. No te preocupes, tus datos están seguros.
+                        </p>
+
+                        {/* Error Details (Development Only) */}
+                        {process.env.NODE_ENV === 'development' && this.state.error && (
+                            <div className="mb-6 bg-slate-900/50 border border-slate-700 rounded-lg p-4 max-h-60 overflow-auto">
+                                <p className="text-xs font-mono text-red-400 mb-2">
+                                    <strong>Error:</strong> {this.state.error.toString()}
+                                </p>
+                                {this.state.errorInfo && (
+                                    <pre className="text-xs font-mono text-slate-400 whitespace-pre-wrap">
+                                        {this.state.errorInfo.componentStack}
+                                    </pre>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                            <button
+                                onClick={this.handleReload}
+                                className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                            >
+                                <RefreshCw size={18} />
+                                Recargar Página
+                            </button>
+
+                            <button
+                                onClick={this.handleGoHome}
+                                className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
+                            >
+                                <Home size={18} />
+                                Ir al Inicio
+                            </button>
+
+                            {process.env.NODE_ENV === 'development' && (
+                                <button
+                                    onClick={this.handleReset}
+                                    className="flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors"
+                                >
+                                    Intentar Recuperar
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Help Text */}
+                        <p className="text-xs text-slate-500 text-center mt-6">
+                            Si el problema persiste, intenta limpiar el caché del navegador o contacta con soporte.
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
+        return this.props.children;
+    }
+}

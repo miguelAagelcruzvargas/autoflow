@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import App from './App';
 
 // Wrapper component that uses AuthContext
@@ -47,8 +48,10 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <AuthProvider>
-      <AppWrapper />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppWrapper />
+      </AuthProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );
