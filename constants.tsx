@@ -7,7 +7,8 @@ import {
   Box, Link, Variable,
   FileJson, FileCode, Search, StickyNote, Activity, FileText,
   // New Icons for Expansion
-  CheckSquare, ListChecks, AlertOctagon, Server, HardDrive, DollarSign, Shield, Megaphone, Radio, Layers, Shuffle, Command, Hammer, Truck, Lock, Unlock, Archive, Save, Upload, Download, Copy, Play
+  CheckSquare, ListChecks, AlertOctagon, Server, HardDrive, DollarSign, Shield, Megaphone, Radio, Layers, Shuffle, Command, Hammer, Truck, Lock, Unlock, Archive, Save, Upload, Download, Copy, Play,
+  Music, PenTool, Sun, CloudLightning, Hash, Eye, Palette
 } from 'lucide-react';
 
 import { Category, NodeTemplate, GuideTip } from './types';
@@ -27,7 +28,8 @@ export const CATEGORIES: Record<Category, string> = {
 // Templates with explicit positions and connection logic
 export const WORKFLOW_TEMPLATES = [
   {
-    id: 't1', // Lead Magnet
+    id: 't1',
+    name: 'Lead Magnet',
     nodes: [
       { type: 'form_trigger', config: { formId: 'ebook-signup-2024' }, position: { x: 50, y: 150 } },
       { type: 'gmail_send', config: { subject: 'Tu Ebook Gratis', sendTo: '{{email}}', message: 'Hola {{name}}, aquí tienes tu descarga: https://...' }, position: { x: 400, y: 50 } },
@@ -39,7 +41,8 @@ export const WORKFLOW_TEMPLATES = [
     ]
   },
   {
-    id: 't2', // Social Monitor
+    id: 't2',
+    name: 'Social Monitor',
     nodes: [
       { type: 'cron', config: { mode: 'everyHour' }, position: { x: 50, y: 200 } },
       { type: 'http', config: { url: 'https://api.twitter.com/2/tweets/search/recent', method: 'GET' }, position: { x: 300, y: 200 } },
@@ -55,7 +58,8 @@ export const WORKFLOW_TEMPLATES = [
     ]
   },
   {
-    id: 't3', // Daily Briefing
+    id: 't3',
+    name: 'Daily Briefing (AI)',
     nodes: [
       { type: 'cron', config: { mode: 'everyDay' }, position: { x: 50, y: 150 } },
       { type: 'googleCalendar', config: { operation: 'get', calendarId: 'primary' }, position: { x: 300, y: 150 } },
@@ -69,7 +73,8 @@ export const WORKFLOW_TEMPLATES = [
     ]
   },
   {
-    id: 't4', // Form to Slack
+    id: 't4',
+    name: 'Form to Slack',
     nodes: [
       { type: 'form_trigger', config: { formId: 'feedback-form' }, position: { x: 50, y: 150 } },
       { type: 'slack', config: { channel: '#feedback', text: 'New Feedback: {{message}}' }, position: { x: 350, y: 150 } }
@@ -77,7 +82,8 @@ export const WORKFLOW_TEMPLATES = [
     connections: [{ source: 0, target: 1 }]
   },
   {
-    id: 't5', // Email to Sheets
+    id: 't5',
+    name: 'Email to Sheets (ETL)',
     nodes: [
       { type: 'mail_trigger', config: { format: 'simple' }, position: { x: 50, y: 150 } },
       { type: 'gemini', config: { prompt: 'Extract key info from email: {{body}}' }, position: { x: 300, y: 150 } },
@@ -86,7 +92,8 @@ export const WORKFLOW_TEMPLATES = [
     connections: [{ source: 0, target: 1 }, { source: 1, target: 2 }]
   },
   {
-    id: 't6', // Weekly Report
+    id: 't6',
+    name: 'Weekly Report',
     nodes: [
       { type: 'cron', config: { mode: 'everyWeek' }, position: { x: 50, y: 150 } },
       { type: 'postgres', config: { operation: 'executeQuery', query: 'SELECT * FROM users' }, position: { x: 300, y: 150 } },
@@ -95,7 +102,8 @@ export const WORKFLOW_TEMPLATES = [
     connections: [{ source: 0, target: 1 }, { source: 1, target: 2 }]
   },
   {
-    id: 't7', // Payment Alert
+    id: 't7',
+    name: 'Payment Alert ($100+)',
     nodes: [
       { type: 'stripe', config: { resource: 'charge' }, position: { x: 50, y: 150 } },
       { type: 'if', config: { conditions: '{{amount}} > 100' }, position: { x: 300, y: 150 } },
@@ -104,7 +112,8 @@ export const WORKFLOW_TEMPLATES = [
     connections: [{ source: 0, target: 1 }, { source: 1, target: 2, sourceHandle: 'true' }]
   },
   {
-    id: 't8', // Webhook to DB
+    id: 't8',
+    name: 'Webhook to DB',
     nodes: [
       { type: 'webhook', config: { path: 'data-ingest', httpMethod: 'POST' }, position: { x: 50, y: 150 } },
       { type: 'mysql', config: { operation: 'insert', query: 'INSERT INTO logs...' }, position: { x: 350, y: 150 } }
@@ -112,7 +121,8 @@ export const WORKFLOW_TEMPLATES = [
     connections: [{ source: 0, target: 1 }]
   },
   {
-    id: 't9', // Image Gen Bot
+    id: 't9',
+    name: 'Image Gen Bot',
     nodes: [
       { type: 'telegram', config: { text: '/imagine {{prompt}}' }, position: { x: 50, y: 150 } },
       { type: 'stability', config: { prompt: '{{prompt}}' }, position: { x: 350, y: 150 } },
@@ -121,7 +131,8 @@ export const WORKFLOW_TEMPLATES = [
     connections: [{ source: 0, target: 1 }, { source: 1, target: 2 }]
   },
   {
-    id: 't10', // Simple Reminder
+    id: 't10',
+    name: 'Simple Reminder',
     nodes: [
       { type: 'cron', config: { mode: 'everyDay' }, position: { x: 50, y: 150 } },
       { type: 'telegram', config: { text: '🔔 Time to drink water!' }, position: { x: 350, y: 150 } }
@@ -129,7 +140,8 @@ export const WORKFLOW_TEMPLATES = [
     connections: [{ source: 0, target: 1 }]
   },
   {
-    id: 't11', // Crypto Watch
+    id: 't11',
+    name: 'Crypto Watch',
     nodes: [
       { type: 'cron', config: { mode: 'everyHour' }, position: { x: 50, y: 150 } },
       { type: 'http', config: { url: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', method: 'GET' }, position: { x: 300, y: 150 } },
@@ -139,7 +151,8 @@ export const WORKFLOW_TEMPLATES = [
     connections: [{ source: 0, target: 1 }, { source: 1, target: 2 }, { source: 2, target: 3, sourceHandle: 'true' }]
   },
   {
-    id: 't12', // Telegram Alert (Free/Plan A)
+    id: 't12',
+    name: 'Telegram Server Alert',
     nodes: [
       { type: 'cron', config: { mode: 'everyHour' }, position: { x: 50, y: 150 } },
       { type: 'http', config: { url: 'https://jsonplaceholder.typicode.com/todos/1', method: 'GET' }, position: { x: 300, y: 150 } },
@@ -1102,5 +1115,86 @@ export const NODE_CATALOG: NodeTemplate[] = [
     type: 'compression', name: 'Compression', icon: Archive, category: 'core',
     color: 'text-slate-400', bg: 'bg-slate-700', border: 'border-slate-500', desc: 'Zip/Unzip',
     n8nType: 'n8n-nodes-base.compression', n8nVersion: 1, fields: [{ name: 'operation', label: 'Operation', type: 'select', options: ['compress', 'decompress'] }]
+  },
+
+  // --- EXPANSION: MEDIA & CREATION ---
+  {
+    type: 'youtube', name: 'YouTube', icon: Video, category: 'app',
+    color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/50', desc: 'Video Platform',
+    n8nType: 'n8n-nodes-base.youtube', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['video', 'channel'] }, { name: 'operation', label: 'Operation', type: 'select', options: ['upload', 'getStatistics'] }]
+  },
+  {
+    type: 'spotify', name: 'Spotify', icon: Music, category: 'app',
+    color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/50', desc: 'Music & Audio',
+    n8nType: 'n8n-nodes-base.spotify', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['playlist', 'track'] }, { name: 'operation', label: 'Operation', type: 'select', options: ['add', 'search'] }]
+  },
+  {
+    type: 'vimeo', name: 'Vimeo', icon: Video, category: 'app',
+    color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/50', desc: 'Video Hosting',
+    n8nType: 'n8n-nodes-base.vimeo', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['video'] }, { name: 'operation', label: 'Operation', type: 'select', options: ['upload', 'get'] }]
+  },
+  {
+    type: 'twitch', name: 'Twitch', icon: Video, category: 'app',
+    color: 'text-purple-500', bg: 'bg-purple-900/20', border: 'border-purple-500/50', desc: 'Live Streaming',
+    n8nType: 'n8n-nodes-base.twitch', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['stream', 'user'] }]
+  },
+  {
+    type: 'pinterest', name: 'Pinterest', icon: Image, category: 'msg',
+    color: 'text-red-500', bg: 'bg-red-900/20', border: 'border-red-500/50', desc: 'Visual Discovery',
+    n8nType: 'n8n-nodes-base.pinterest', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['pin', 'board'] }]
+  },
+  {
+    type: 'unsplash', name: 'Unsplash', icon: Image, category: 'app',
+    color: 'text-slate-200', bg: 'bg-slate-700', border: 'border-slate-500', desc: 'Stock Photos',
+    n8nType: 'n8n-nodes-base.unsplash', n8nVersion: 1, fields: [{ name: 'operation', label: 'Operation', type: 'select', options: ['search', 'get'] }]
+  },
+
+  // --- EXPANSION: BIZ & UTILS ---
+  {
+    type: 'calendly', name: 'Calendly', icon: Calendar, category: 'app',
+    color: 'text-blue-400', bg: 'bg-blue-900/20', border: 'border-blue-500/50', desc: 'Scheduling',
+    n8nType: 'n8n-nodes-base.calendly', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['scheduledEvent'] }]
+  },
+  {
+    type: 'docusign', name: 'DocuSign', icon: PenTool, category: 'app',
+    color: 'text-blue-600', bg: 'bg-blue-900/20', border: 'border-blue-500/50', desc: 'E-Signature',
+    n8nType: 'n8n-nodes-base.docusign', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['envelope'] }]
+  },
+  {
+    type: 'dropboxSign', name: 'Dropbox Sign', icon: PenTool, category: 'app',
+    color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/50', desc: 'E-Signature',
+    n8nType: 'n8n-nodes-base.dropboxSign', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['signatureRequest'] }]
+  },
+  {
+    type: 'bitly', name: 'Bitly', icon: Link, category: 'cloud',
+    color: 'text-orange-500', bg: 'bg-orange-900/20', border: 'border-orange-500/50', desc: 'URL Shortener',
+    n8nType: 'n8n-nodes-base.bitly', n8nVersion: 1, fields: [{ name: 'operation', label: 'Operation', type: 'select', options: ['shorten'] }, { name: 'longUrl', label: 'Long URL', type: 'text' }]
+  },
+  {
+    type: 'openWeather', name: 'OpenWeatherMap', icon: Sun, category: 'cloud',
+    color: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/50', desc: 'Weather Data',
+    n8nType: 'n8n-nodes-base.openWeatherMap', n8nVersion: 1, fields: [{ name: 'operation', label: 'Operation', type: 'select', options: ['current', 'forecast'] }, { name: 'city', label: 'City', type: 'text' }]
+  },
+
+  // --- EXPANSION: DESIGN & NO-CODE ---
+  {
+    type: 'figma', name: 'Figma', icon: PenTool, category: 'app',
+    color: 'text-purple-400', bg: 'bg-purple-900/20', border: 'border-purple-500/50', desc: 'Interface Design',
+    n8nType: 'n8n-nodes-base.figma', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['file', 'comment'] }]
+  },
+  {
+    type: 'webflow', name: 'Webflow', icon: LayoutTemplate, category: 'dev',
+    color: 'text-blue-500', bg: 'bg-blue-900/20', border: 'border-blue-500/50', desc: 'Web Builder',
+    n8nType: 'n8n-nodes-base.webflow', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['item', 'site'] }]
+  },
+  {
+    type: 'bubble', name: 'Bubble', icon: FileCode, category: 'dev',
+    color: 'text-indigo-400', bg: 'bg-indigo-900/20', border: 'border-indigo-500/50', desc: 'No-Code App',
+    n8nType: 'n8n-nodes-base.bubble', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['object'] }]
+  },
+  {
+    type: 'linear', name: 'Linear', icon: CheckSquare, category: 'dev',
+    color: 'text-slate-200', bg: 'bg-slate-700', border: 'border-slate-500', desc: 'Issue Tracking',
+    n8nType: 'n8n-nodes-base.linear', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['issue', 'comment'] }]
   }
 ];

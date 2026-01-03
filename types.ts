@@ -46,7 +46,11 @@ export type NodeType =
   // Files
   | 'box' | 'nextcloud'
   // Utilities
-  | 'spreadsheetFile' | 'readBinaryFile' | 'writeBinaryFile' | 'executeCommand' | 'itemLists' | 'moveBinaryData' | 'compression';
+  | 'spreadsheetFile' | 'readBinaryFile' | 'writeBinaryFile' | 'executeCommand' | 'itemLists' | 'moveBinaryData' | 'compression'
+  // --- EXPANSION PACK V3 (Multimedia & Design) ---
+  | 'youtube' | 'spotify' | 'vimeo' | 'twitch' | 'pinterest' | 'unsplash'
+  | 'calendly' | 'docusign' | 'dropboxSign' | 'bitly' | 'openWeather'
+  | 'figma';
 
 export type Category = 'trigger' | 'core' | 'ai' | 'google' | 'msg' | 'data' | 'app' | 'cloud' | 'dev';
 

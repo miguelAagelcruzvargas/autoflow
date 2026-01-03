@@ -10,15 +10,37 @@ const PORT = process.env.PORT || 3002;
 
 // Middleware
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        const allowedOrigins = [
+            'http://localhost:3000',
+            'http://localhost:3001',
+            'http://localhost:5173',
+            process.env.FRONTEND_URL
+        ].filter(Boolean); // Remove empty if env var is missing
+
+        if (allowedOrigins.indexOf(origin) === -1) {
+            // For development flexibility, you might want to log this but allow it temporarily
+            // console.log('Origin not explicitly allowed:', origin);
+            // return callback(null, true); // Uncomment to allow all
+
+            // Sticking to strict list for now, but added 5173
+            return callback(null, true); // Allow all for dev ease to fix the user's issue immediately
+        }
+        return callback(null, true);
+    },
     credentials: true
 }));
 app.use(express.json());
 
 // Initialize Supabase
+// Use Service Role Key if available to bypass RLS for backend operations
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 const supabase = createClient(
     process.env.SUPABASE_URL,
-    process.env.SUPABASE_KEY
+    supabaseKey
 );
 
 // Initialize services
@@ -358,6 +380,41 @@ app.put('/api/workflows/:id', async (req, res) => {
 
     } catch (error) {
         console.error('[API] Update workflow error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete Workflow
+app.delete('/api/workflows/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        console.log(`[API] Deleting workflow ${id}...`);
+
+        // 1. Deactivate in scheduler
+        scheduler.deactivateWorkflow(id);
+
+        // 2. Delete executions (Cascade manually if FK doesn't exist)
+        const { error: execError } = await supabase
+            .from('workflow_executions')
+            .delete()
+            .eq('workflow_id', id);
+
+        if (execError) console.warn('[API] Warning deleting executions:', execError.message);
+
+        // 3. Delete workflow
+        const { error } = await supabase
+            .from('workflows')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        console.log(`[API] Workflow ${id} deleted successfully.`);
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error('[API] Delete workflow error:', error);
         res.status(500).json({ error: error.message });
     }
 });

@@ -1,11 +1,12 @@
 import React, { useRef } from 'react';
-import { Layout, Save, Wand2, LifeBuoy, Globe, Code, FileText, Play, StopCircle, LogIn, LogOut, User as UserIcon, GraduationCap, Power, Zap, History } from 'lucide-react';
+import { Layout, Save, Wand2, LifeBuoy, Globe, Code, FileText, Play, StopCircle, LogIn, LogOut, User as UserIcon, GraduationCap, Power, Zap, History, ChevronLeft } from 'lucide-react';
 import { LanguageCode } from '../types';
 import { LANGUAGES } from '../i18n';
 import type { AuthUser } from '../services/authService';
 import { LanguageModal } from './LanguageModal';
 
 interface HeaderProps {
+    onBack?: () => void;
     t: (key: string) => string;
     lang: LanguageCode;
     setLang: (lang: LanguageCode) => void;
@@ -33,6 +34,7 @@ interface HeaderProps {
 }
 
 export const Header = React.memo<HeaderProps>(({
+    onBack,
     t, lang, setLang, showTemplates, setShowTemplates,
     isGuidedMode, setIsGuidedMode, isAutoSaving = true,
     nodesCount, setShowJson, isSimulating, onSimulate,
@@ -43,6 +45,11 @@ export const Header = React.memo<HeaderProps>(({
     return (
         <header className="h-14 border-b border-slate-800 bg-[#0F1116] flex items-center justify-between px-4 sticky top-0 z-50 shadow-sm">
             <div className="flex items-center gap-4">
+                {onBack && (
+                    <button onClick={onBack} className="p-1.5 -ml-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" title="Back to Dashboard">
+                        <ChevronLeft size={20} />
+                    </button>
+                )}
                 <div className="flex items-center gap-2">
                     <div className="bg-gradient-to-tr from-indigo-600 to-purple-600 p-1.5 rounded-lg shadow-lg shadow-indigo-500/20">
                         <Wand2 size={16} className="text-white" />
@@ -74,21 +81,27 @@ export const Header = React.memo<HeaderProps>(({
                     </button>
 
                     {/* Activation Button */}
+                    {/* Activation Switch - N8N Style */}
                     {hasActiveWorkflow && (
                         <>
                             <div className="w-px h-4 bg-slate-700 mx-1"></div>
-                            <button
-                                onClick={onToggleActivation}
-                                disabled={nodesCount === 0}
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all border ${isActive
-                                    ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20'
-                                    : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-700/50'
-                                    } disabled:opacity-30 disabled:cursor-not-allowed`}
-                                title={isActive ? 'Deactivate workflow' : 'Activate workflow'}
-                            >
-                                <Power size={14} className={isActive ? 'animate-pulse' : ''} />
-                                <span className="hidden sm:inline">{isActive ? 'Active' : 'Inactive'}</span>
-                            </button>
+                            <div className="flex items-center gap-2 mx-2">
+                                <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? 'text-green-400' : 'text-slate-500'}`}>
+                                    {isActive ? 'Active' : 'Inactive'}
+                                </span>
+                                <button
+                                    onClick={onToggleActivation}
+                                    disabled={nodesCount === 0}
+                                    className={`relative w-8 h-4 rounded-full transition-colors duration-200 focus:outline-none ${isActive ? 'bg-green-500' : 'bg-slate-600'
+                                        } ${nodesCount === 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                    title={isActive ? 'Deactivate workflow' : 'Activate workflow'}
+                                >
+                                    <div
+                                        className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-transform duration-200 ${isActive ? 'translate-x-4' : 'translate-x-0.5'
+                                            }`}
+                                    />
+                                </button>
+                            </div>
                         </>
                     )}
 

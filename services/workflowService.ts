@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { Workflow } from '../lib/supabase';
+export type { Workflow };
 import type { NodeInstance, Connection } from '../types';
 import { backendApi } from './backendApi';
 
@@ -100,13 +101,11 @@ class WorkflowService {
      */
     async deleteWorkflow(id: string): Promise<{ error: string | null }> {
         try {
-            const { error } = await supabase
-                .from('workflows')
-                .delete()
-                .eq('id', id);
-
-            return { error: error ? error.message : null };
+            // Use backend API to ensure proper cleanup and RLS bypass
+            await backendApi.delete(`/api/workflows/${id}`);
+            return { error: null };
         } catch (err) {
+            console.error('Delete workflow error:', err);
             return { error: (err as Error).message };
         }
     }

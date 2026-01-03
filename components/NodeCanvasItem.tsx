@@ -89,12 +89,24 @@ export const NodeCanvasItem = memo(({ node, isSelected, onSelect, onDelete, onMo
                 </div>
             )}
 
-            {/* Input Handle - Left Center */}
+            {/* Input Handle - Only active on hover */}
             <div
-                className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center cursor-crosshair z-40 opacity-0 group-hover:opacity-100 transition-opacity"
-                onMouseUp={(e) => { e.stopPropagation(); onConnectEnd(e, node.id); }}
+                className="absolute -left-4 top-0 w-8 h-full flex items-center justify-start cursor-crosshair z-10 pointer-events-none group-hover:pointer-events-auto"
+                onMouseUp={(e) => {
+                    // Allow propagation so App can clear drag state!
+                    e.preventDefault();
+                    onConnectEnd(e, node.id);
+                }}
+                onMouseEnter={(e) => {
+                    const dot = e.currentTarget.querySelector('.connection-dot');
+                    if (dot) dot.classList.add('!opacity-100', 'scale-150');
+                }}
+                onMouseLeave={(e) => {
+                    const dot = e.currentTarget.querySelector('.connection-dot');
+                    if (dot) dot.classList.remove('!opacity-100', 'scale-150');
+                }}
             >
-                <div className="w-3 h-3 bg-slate-400 rounded-full border border-slate-600 hover:bg-indigo-400 hover:scale-150 transition-all"></div>
+                <div className="connection-dot w-2 h-2 bg-slate-400 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-md border border-white/20"></div>
             </div>
 
             <div className="flex items-center gap-3 pointer-events-none h-full">
@@ -109,8 +121,7 @@ export const NodeCanvasItem = memo(({ node, isSelected, onSelect, onDelete, onMo
                 </div>
             </div>
 
-            {/* Action Buttons - DELETE BUTTON ENHANCED */}
-            {/* Always visible if selected, otherwise on hover. Larger click area. */}
+            {/* Action Buttons */}
             <div className={`absolute -top-3 -right-3 flex gap-1 pointer-events-auto transition-opacity duration-200 z-50 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                 <button
                     onMouseDown={(e) => e.stopPropagation()}
@@ -138,17 +149,29 @@ export const NodeCanvasItem = memo(({ node, isSelected, onSelect, onDelete, onMo
                 </div>
             )}
 
-            {/* Output Handles */}
+            {/* Output Handles - Only active on hover */}
             {handles.map(handle => (
                 <div
                     key={handle.id}
-                    className="absolute -right-3 w-6 h-6 flex items-center justify-center cursor-crosshair z-40 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute -right-4 w-8 h-16 flex items-center justify-end cursor-crosshair z-10 pointer-events-none group-hover:pointer-events-auto"
                     style={{ top: handle.top, transform: 'translateY(-50%)' }}
-                    onMouseDown={(e) => { e.stopPropagation(); onConnectStart(e, node.id, handle.id); }}
+                    onMouseDown={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        onConnectStart(e, node.id, handle.id);
+                    }}
+                    onMouseEnter={(e) => {
+                        const dot = e.currentTarget.querySelector('.connection-dot');
+                        if (dot) dot.classList.add('!opacity-100', 'scale-150');
+                    }}
+                    onMouseLeave={(e) => {
+                        const dot = e.currentTarget.querySelector('.connection-dot');
+                        if (dot) dot.classList.remove('!opacity-100', 'scale-150');
+                    }}
                 >
-                    <div className={`w-3 h-3 ${handle.color} rounded-full border border-slate-600 hover:scale-150 transition-all`}>
+                    <div className={`connection-dot w-2 h-2 ${handle.color} rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-md border border-white/20`}>
                         {handle.label && (
-                            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[9px] font-bold text-white bg-slate-800 px-1.5 py-0.5 rounded pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100">
+                            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[9px] font-bold text-white bg-slate-800/90 px-1.5 py-0.5 rounded pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                                 {handle.label}
                             </span>
                         )}

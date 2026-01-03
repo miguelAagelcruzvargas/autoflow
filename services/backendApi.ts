@@ -107,5 +107,66 @@ export const backendApi = {
     async getStatus() {
         const response = await fetch(`${BACKEND_URL}/api/workflows/status`);
         return response.json();
+    },
+    // Generic POST
+    async post(endpoint: string, body: any) {
+        const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            try {
+                const error = JSON.parse(text);
+                throw new Error(error.error || `Request failed: ${response.statusText}`);
+            } catch (e) {
+                if (e instanceof Error && e.message !== 'Unexpected token') throw e; // Re-throw if it's the error we just created
+                throw new Error(`Server Error (${response.status}): ${text.substring(0, 100)}...`);
+            }
+        }
+        return response.json();
+    },
+
+    // Generic PUT
+    async put(endpoint: string, body: any) {
+        const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            try {
+                const error = JSON.parse(text);
+                throw new Error(error.error || `Request failed: ${response.statusText}`);
+            } catch (e) {
+                if (e instanceof Error && e.message !== 'Unexpected token') throw e;
+                throw new Error(`Server Error (${response.status}): ${text.substring(0, 100)}...`);
+            }
+        }
+        return response.json();
+    },
+
+    // Generic DELETE
+    async delete(endpoint: string) {
+        const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            try {
+                const error = JSON.parse(text);
+                throw new Error(error.error || `Request failed: ${response.statusText}`);
+            } catch (e) {
+                if (e instanceof Error && e.message !== 'Unexpected token') throw e;
+                throw new Error(`Server Error (${response.status}): ${text.substring(0, 100)}...`);
+            }
+        }
+        return response.json();
     }
 };

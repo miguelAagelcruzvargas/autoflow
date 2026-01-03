@@ -21,9 +21,12 @@ Una experiencia de usuario diseñada para la velocidad y la claridad:
 *   **Navegación Espacial:** Zoom, Paneo infinito y Mini-mapa.
 *   **Gestión de Grupos:** Selección múltiple (`Ctrl+Click`), Selección de Área (`Alt+Drag`) y arrastre de grupos completos.
 *   **Diseño Glassmorphism:** Interfaz moderna, oscura y translúcida que reduce la fatiga visual.
-*   **Tutorial Interactivo:** Sistema de onboarding inmersivo con detecciones de acción en tiempo real, punteros animados y spotlight.
+*   **Tutorial Interactivo:** Sistema de onboarding inmersivo con detecciones de acción en tiempo real.
 
-### 🛡️ 5. Seguridad y Gobernanza
+### 🔐 3. Motor de Ejecución Seguro
+*   **Sandbox de Ejecución:** Cada workflow se ejecuta en un entorno aislado con validación de tipos.
+*   **Secure Backend API:** Node.js + Express con encriptación AES-256.
+*   **Nativo de Nube:** Supabase para persistencia y logs.
 *   **Gestión de Credenciales:** Los tokens de API y contraseñas se manejan con el tipo de campo `credential`, asegurando que nunca se expongan en texto plano en la interfaz.
 *   **Validación Estricta:** Campos obligatorios y lógica condicional para prevenir errores de configuración.
 
@@ -119,11 +122,22 @@ Actualmente, la ejecución ocurre en el cliente. Estamos migrando a **Workers de
 
 ### 🤝 Fase 2: Colaboración en Tiempo Real
 *   Edición multijugador del canvas (estilo Figma) usando WebSockets.
-*   Comentarios y notas sobre los nodos para equipos.
+*   Comentarios y anotaciones en nodos.
+*   Control de versiones y rollback de workflows.
 
-### 📦 Fase 3: Ecosistema
-*   **Marketplace de Plantillas:** Comparte y monetiza tus flujos.
-*   **Nodos Personalizados:** API para crear tus propios nodos con JS/Python.
+### 🔒 Fase 3: Características Enterprise (Completadas)
+*   ✅ **Backend Vault:** Encriptación AES-256-CBC en reposo para todas las credenciales.
+*   ✅ **Webhooks System:** Endpoint dedicado `/hooks/:workflowId/:slug` para recibir eventos externos.
+*   ✅ **Gobernanza de Datos:** Trazabilidad de logs y auditoría detallada.
+
+## 🚀 Próximos Pasos (Roadmap)
+
+- [x] **Webhooks System** (Completado)
+- [x] **Backend Vault** (Completado)
+- [ ] **Marketplace de Plantillas** (Comunidad)
+- [ ] **Dashboard de Analítica** con gráficos
+- [ ] **Soporte Multi-entorno** (Dev/Staging/Prod)
+- [ ] **Nodos Personalizados:** API para crear tus propios nodos con JS/Python.
 
 ---
 
