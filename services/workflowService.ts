@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import type { Workflow } from '../lib/supabase';
 import type { NodeInstance, Connection } from '../types';
+import { backendApi } from './backendApi';
 
 class WorkflowService {
     /**
@@ -39,7 +40,7 @@ class WorkflowService {
     }
 
     /**
-     * Create a new workflow
+     * Create a new workflow (VIA BACKEND API)
      */
     async createWorkflow(
         name: string,
@@ -51,28 +52,26 @@ class WorkflowService {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return { workflow: null, error: 'Not authenticated' };
 
-            const { data, error } = await supabase
-                .from('workflows')
-                .insert({
-                    user_id: user.id,
-                    name,
-                    description,
-                    nodes,
-                    connections,
-                    is_public: false
-                })
-                .select()
-                .single();
+            const response = await backendApi.post('/api/workflows', {
+                user_id: user.id,
+                name,
+                description,
+                nodes,
+                connections,
+                is_public: false
+            });
 
-            if (error) return { workflow: null, error: error.message };
-            return { workflow: data, error: null };
+            if (!response.workflow) throw new Error('Invalid response from server');
+
+            return { workflow: response.workflow, error: null };
         } catch (err) {
+            console.error('Create workflow error:', err);
             return { workflow: null, error: (err as Error).message };
         }
     }
 
     /**
-     * Update an existing workflow
+     * Update an existing workflow (VIA BACKEND API)
      */
     async updateWorkflow(
         id: string,
@@ -85,16 +84,13 @@ class WorkflowService {
         }
     ): Promise<{ workflow: Workflow | null; error: string | null }> {
         try {
-            const { data, error } = await supabase
-                .from('workflows')
-                .update(updates)
-                .eq('id', id)
-                .select()
-                .single();
+            const response = await backendApi.put(`/api/workflows/${id}`, updates);
 
-            if (error) return { workflow: null, error: error.message };
-            return { workflow: data, error: null };
+            if (!response.workflow) throw new Error('Invalid response from server');
+
+            return { workflow: response.workflow, error: null };
         } catch (err) {
+            console.error('Update workflow error:', err);
             return { workflow: null, error: (err as Error).message };
         }
     }

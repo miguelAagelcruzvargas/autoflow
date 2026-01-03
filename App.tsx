@@ -11,6 +11,7 @@ import { CONTENT_TRANSLATIONS, LANGUAGES, UI_STRINGS } from './i18n';
 import { analyzeWorkflow, generateSmartConfig, generateWorkflowFromPrompt } from './services/aiService';
 import { workflowService } from './services/workflowService';
 import { executionEngine } from './services/executionEngine';
+import { backendApi } from './services/backendApi';
 
 // Import Components
 import { AuthModal } from './components/AuthModal';
@@ -28,6 +29,10 @@ import { TemplatesModal } from './components/TemplatesModal';
 import { JsonViewModal } from './components/JsonViewModal';
 import { HelpButton } from './components/HelpButton';
 import { InteractiveTutorial } from './components/InteractiveTutorial';
+import { TestModeModal } from './components/TestModeModal';
+
+import { ExecutionLogsModal } from './components/ExecutionLogsModal';
+import { exportToN8n } from './utils/n8nExporter';
 
 // --- HELPER FUNCTIONS ---
 function generateId(): string {
@@ -98,6 +103,12 @@ function App({ user, onLogout }: AppProps) {
   // Auth State
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [currentWorkflowId, setCurrentWorkflowId] = useState<string | null>(null);
+
+  // Activation State
+  const [isActive, setIsActive] = useState(false);
+  const [showTestModeModal, setShowTestModeModal] = useState(false);
+  const [isActivating, setIsActivating] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   // Simulation State
   const [isSimulating, setIsSimulating] = useState(false);
@@ -245,14 +256,13 @@ function App({ user, onLogout }: AppProps) {
   useEffect(() => {
     // Debounce slightly to avoid thrashing storage on drag
     const timeoutId = setTimeout(() => {
-      if (nodes.length > 0) { // Only save if there's content to avoid overwriting with empty
-        const draft = {
-          nodes,
-          connections,
-          timestamp: Date.now()
-        };
-        localStorage.setItem('autoflow_draft', JSON.stringify(draft));
-      }
+      // Removing the nodes.length > 0 check to allow saving empty state (clearing the canvas)
+      const draft = {
+        nodes,
+        connections,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('autoflow_draft', JSON.stringify(draft));
     }, 500);
 
     return () => clearTimeout(timeoutId);
@@ -840,6 +850,79 @@ function App({ user, onLogout }: AppProps) {
     }
   };
 
+  // Activation Logic
+  const handleToggleActivation = async () => {
+    if (isActivating) return;
+
+    setIsActivating(true);
+    try {
+      // Save workflow first if not saved
+      let workflowId = currentWorkflowId;
+      if (!workflowId) {
+        const { workflow, error } = await workflowService.createWorkflow(
+          `Workflow ${new Date().toLocaleString()}`,
+          nodes,
+          connections
+        );
+        if (error || !workflow) {
+          addToast(`Failed to save workflow: ${error || 'Unknown error'}`, "error");
+          setIsActivating(false);
+          return;
+        }
+        workflowId = workflow.id;
+        setCurrentWorkflowId(workflowId);
+      } else {
+        // Update existing workflow
+        await workflowService.updateWorkflow(workflowId, { nodes, connections });
+      }
+
+      // Toggle activation
+      if (isActive) {
+        await backendApi.deactivateWorkflow(workflowId);
+        setIsActive(false);
+        addToast("Workflow deactivated", "success");
+      } else {
+        await backendApi.activateWorkflow(workflowId);
+        setIsActive(true);
+        addToast("Workflow activated! Running in background", "success");
+      }
+    } catch (error) {
+      addToast(`Activation failed: ${(error as Error).message}`, "error");
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
+  const handleStartTestMode = async (config: { interval: string; duration: string; maxExecutions?: number }) => {
+    try {
+      // Save workflow first if not saved
+      let workflowId = currentWorkflowId;
+      if (!workflowId) {
+        const { workflow, error } = await workflowService.createWorkflow(
+          `Workflow ${new Date().toLocaleString()}`,
+          nodes,
+          connections
+        );
+        if (error || !workflow) {
+          addToast(`Failed to save workflow: ${error || 'Unknown error'}`, "error");
+          return;
+        }
+        workflowId = workflow.id;
+        setCurrentWorkflowId(workflowId);
+      } else {
+        // Update existing workflow
+        await workflowService.updateWorkflow(workflowId, { nodes, connections });
+      }
+
+      // Start test mode
+      await backendApi.startTestMode(workflowId, config);
+      addToast(`Test mode started: ${config.interval} for ${config.duration}`, "success");
+    } catch (error) {
+      addToast(`Test mode failed: ${(error as Error).message}`, "error");
+      throw error;
+    }
+  };
+
   // Save workflow
   const handleSaveWorkflow = async () => {
     try {
@@ -975,6 +1058,11 @@ function App({ user, onLogout }: AppProps) {
         }}
         showLanguageModal={showLanguageModal}
         setShowLanguageModal={setShowLanguageModal}
+        isActive={isActive}
+        onToggleActivation={handleToggleActivation}
+        onTestMode={() => setShowTestModeModal(true)}
+        hasActiveWorkflow={nodes.some(n => n.type === 'cron')}
+        onShowHistory={() => setShowHistory(true)}
       />
 
       <main className="flex-1 flex overflow-hidden relative">
@@ -1272,23 +1360,7 @@ function App({ user, onLogout }: AppProps) {
         t={t}
         lang={lang}
         onShowGuide={() => setShowConnectivityGuide(true)}
-        exportData={{
-          // Calculate export data on the fly or pass helper
-          // Ideally this calculation should be in a helper function to avoid clutter here
-          // Replicating basic logic for now
-          nodes: nodes.map(n => ({
-            parameters: { ...n.config, ...n.customParams },
-            name: n.name,
-            type: n.n8nType,
-            typeVersion: n.n8nVersion || 1,
-            position: [n.position.x, n.position.y],
-            id: n.id
-          })),
-          connections: connections.reduce((acc, conn) => {
-            // Simplified logic
-            return acc;
-          }, {})
-        }}
+        exportData={exportToN8n(nodes, connections)}
         addToast={addToast}
       />
 
@@ -1321,6 +1393,20 @@ function App({ user, onLogout }: AppProps) {
 
       {/* Auth Modal */}
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+
+      {/* Test Mode Modal */}
+      <ExecutionLogsModal
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+        workflowId="demo-flow-1"
+      />
+
+      <TestModeModal
+        isOpen={showTestModeModal}
+        onClose={() => setShowTestModeModal(false)}
+        onStart={handleStartTestMode}
+        workflowName={currentWorkflowId ? `Workflow ${currentWorkflowId.slice(0, 8)}` : 'Current Workflow'}
+      />
 
       {/* Toasts */}
       <div className="fixed top-4 right-4 z-[100] space-y-2">

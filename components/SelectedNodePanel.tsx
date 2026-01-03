@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { X, Sparkles, Loader2, HelpCircle, ChevronDown } from 'lucide-react';
+import { X, Sparkles, Loader2, HelpCircle, ChevronDown, Zap, Copy } from 'lucide-react';
 import { NodeInstance, LanguageCode } from '../types';
 import { GuideBot } from './GuideBot';
 import { ConditionBuilder } from './ConditionBuilder';
@@ -78,6 +78,39 @@ export const SelectedNodePanel: React.FC<SelectedNodePanelProps> = ({
 
                 <div className="flex-1 overflow-y-auto p-4 md:p-5 space-y-6 custom-scrollbar">
 
+                    {/* WEBHOOK URL DISPLAY */}
+                    {selectedNode.type === 'webhook' && (
+                        <div className="p-4 bg-pink-950/20 border border-pink-500/20 rounded-xl animate-[fadeIn_0.5s]">
+                            <label className="text-[10px] font-bold text-pink-400 uppercase tracking-widest mb-2 block flex items-center gap-2">
+                                <Zap size={10} /> Webhook URL
+                            </label>
+
+                            {!selectedNode.id || selectedNode.id.length < 10 ? ( // Assume ID length < 10 basically means unsaved/temp ID
+                                <div className="text-xs text-slate-400 italic">Save workflow to generate URL</div>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <code className="flex-1 bg-[#0B0E14] border border-pink-500/30 rounded-lg px-3 py-2 text-[10px] text-pink-300 font-mono break-all leading-relaxed">
+                                        {/* @ts-ignore */}
+                                        {`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3002'}/hooks/${selectedNode.id.split('_')[0] || 'WORKFLOW_ID'}/${selectedNode.config.path || 'webhook-slug'}`}
+                                    </code>
+                                    <button
+                                        className="bg-pink-600 hover:bg-pink-500 text-white p-2 rounded-lg transition-colors"
+                                        title="Copy URL"
+                                        onClick={() => {
+                                            // @ts-ignore
+                                            navigator.clipboard.writeText(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3002'}/hooks/${selectedNode.id.split('_')[0] || 'WORKFLOW_ID'}/${selectedNode.config.path || 'webhook-slug'}`);
+                                        }}
+                                    >
+                                        <Copy size={16} />
+                                    </button>
+                                </div>
+                            )}
+                            <p className="mt-2 text-[9px] text-slate-500">
+                                Send a <strong>{selectedNode.config.httpMethod || 'GET'}</strong> request to this URL to trigger the flow.
+                            </p>
+                        </div>
+                    )}
+
                     {/* DATA VISION: Execution Results */}
                     {simulationLogs && simulationLogs.some(l => l.nodeId === selectedNode.id) && (
                         <div className="mb-6 animate-[fadeIn_0.5s]">
@@ -127,13 +160,29 @@ export const SelectedNodePanel: React.FC<SelectedNodePanelProps> = ({
                     <div className="space-y-5 pb-20 md:pb-0">
                         {selectedNode.fields && selectedNode.fields.length > 0 ? (
                             selectedNode.fields.map(field => {
+                                // 1. Conditional Logic
+                                if (field.displayCondition) {
+                                    const { field: depField, value: depValue } = field.displayCondition;
+                                    const currentDepValue = selectedNode.config[depField];
+                                    const shouldShow = Array.isArray(depValue)
+                                        ? depValue.includes(currentDepValue)
+                                        : currentDepValue === depValue;
+
+                                    if (!shouldShow) return null;
+                                }
+
                                 const helpKey = field.help || field.name;
                                 const helpTip = content.tips[helpKey];
+                                const isCredential = field.type === 'credential';
 
                                 return (
                                     <div key={field.name} className="animate-[fadeIn_0.3s]">
                                         <div className="flex justify-between items-center mb-1.5">
-                                            <label className="text-xs font-semibold text-slate-300">{field.label}</label>
+                                            <div className="flex items-center gap-1">
+                                                <label className="text-xs font-semibold text-slate-300">{field.label}</label>
+                                                {field.required && <span className="text-pink-500 text-xs font-bold" title="Required">*</span>}
+                                                {isCredential && <span className="text-[9px] bg-slate-800 text-slate-400 px-1 rounded ml-2 border border-slate-700">SECRET</span>}
+                                            </div>
                                             {helpTip && (
                                                 <div className="group relative cursor-help">
                                                     <HelpCircle size={12} className="text-slate-600 hover:text-indigo-400 transition-colors" />
@@ -157,7 +206,7 @@ export const SelectedNodePanel: React.FC<SelectedNodePanelProps> = ({
                                                 </select>
                                                 <ChevronDown size={14} className="absolute right-3 top-3.5 text-slate-500 pointer-events-none" />
                                             </div>
-                                        ) : (field.type === 'textarea' || field.type === 'text' || field.type === 'json') ? (
+                                        ) : (field.type === 'textarea' || field.type === 'text' || field.type === 'json' || field.type === 'credential') ? (
                                             <div className="relative group/input">
                                                 {/* Magic Variable Button - Appears on Focus or Hover */}
                                                 {(focusedField === field.name || availableVars.length > 0) && (
@@ -209,8 +258,8 @@ export const SelectedNodePanel: React.FC<SelectedNodePanelProps> = ({
                                                     />
                                                 ) : (
                                                     <input
-                                                        type={field.type}
-                                                        className="w-full bg-[#0B0E14] border border-slate-700 rounded-lg p-3 text-sm md:text-xs text-white focus:border-indigo-500 outline-none transition-colors pr-8"
+                                                        type={isCredential ? "password" : field.type}
+                                                        className={`w-full bg-[#0B0E14] border ${field.required && !selectedNode.config[field.name] ? 'border-pink-500/30' : 'border-slate-700'} rounded-lg p-3 text-sm md:text-xs text-white focus:border-indigo-500 outline-none transition-colors pr-8`}
                                                         placeholder={field.placeholder}
                                                         value={selectedNode.config[field.name] || ''}
                                                         onChange={(e) => setNodes(p => p.map(n => n.id === selectedNode.id ? { ...n, config: { ...n.config, [field.name]: e.target.value } } : n))}
@@ -233,7 +282,7 @@ export const SelectedNodePanel: React.FC<SelectedNodePanelProps> = ({
                                                 <span className="text-xs text-slate-400">{selectedNode.config[field.name] ? 'Enabled' : 'Disabled'}</span>
                                             </div>
                                         ) : (
-                                            // Fallback for number and other simple types (rendered inside the grouped block logic above for text reuse but handled here for others or default safety)
+                                            // Fallback for number and other simple types
                                             <input
                                                 type={field.type}
                                                 className="w-full bg-[#0B0E14] border border-slate-700 rounded-lg p-3 text-sm md:text-xs text-white focus:border-indigo-500 outline-none transition-colors"

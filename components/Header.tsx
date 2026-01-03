@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Layout, Save, Wand2, LifeBuoy, Globe, Code, FileText, Play, StopCircle, LogIn, LogOut, User as UserIcon, GraduationCap } from 'lucide-react';
+import { Layout, Save, Wand2, LifeBuoy, Globe, Code, FileText, Play, StopCircle, LogIn, LogOut, User as UserIcon, GraduationCap, Power, Zap, History } from 'lucide-react';
 import { LanguageCode } from '../types';
 import { LANGUAGES } from '../i18n';
 import type { AuthUser } from '../services/authService';
@@ -24,13 +24,20 @@ interface HeaderProps {
     onRestartTutorial?: () => void;
     showLanguageModal: boolean;
     setShowLanguageModal: (show: boolean) => void;
+    // Activation props
+    isActive?: boolean;
+    onToggleActivation?: () => void;
+    onTestMode?: () => void;
+    hasActiveWorkflow?: boolean;
+    onShowHistory?: () => void;
 }
 
 export const Header = React.memo<HeaderProps>(({
     t, lang, setLang, showTemplates, setShowTemplates,
     isGuidedMode, setIsGuidedMode, isAutoSaving = true,
     nodesCount, setShowJson, isSimulating, onSimulate,
-    user, onShowAuth, onLogout, onRestartTutorial, showLanguageModal, setShowLanguageModal
+    user, onShowAuth, onLogout, onRestartTutorial, showLanguageModal, setShowLanguageModal,
+    isActive, onToggleActivation, onTestMode, hasActiveWorkflow, onShowHistory
 }) => {
     const langButtonRef = useRef<HTMLButtonElement>(null);
     return (
@@ -51,58 +58,98 @@ export const Header = React.memo<HeaderProps>(({
                 >
                     <Layout size={14} /> <span>{t('templates')}</span>
                 </button>
-                <div className="h-5 w-px bg-slate-800 mx-2" />
-                <button
-                    onClick={onSimulate}
-                    disabled={nodesCount === 0}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all border ${isSimulating
-                        ? 'bg-red-500/10 text-red-400 border-red-500/30'
-                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
-                        } disabled:opacity-30 disabled:cursor-not-allowed`}
-                >
-                    {isSimulating ? <StopCircle size={14} /> : <Play size={14} />}
-                    <span>{isSimulating ? t('stop') : t('simulate')}</span>
-                </button>
+
+                {/* Execution Controls Group */}
+                <div className="flex items-center gap-1 ml-4 bg-slate-800/30 p-1 rounded-lg border border-slate-800">
+                    <button
+                        onClick={onSimulate}
+                        disabled={nodesCount === 0}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all border ${isSimulating
+                            ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                            : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
+                            } disabled:opacity-30 disabled:cursor-not-allowed`}
+                    >
+                        {isSimulating ? <StopCircle size={14} /> : <Play size={14} />}
+                        <span>{isSimulating ? t('stop') : t('simulate')}</span>
+                    </button>
+
+                    {/* Activation Button */}
+                    {hasActiveWorkflow && (
+                        <>
+                            <div className="w-px h-4 bg-slate-700 mx-1"></div>
+                            <button
+                                onClick={onToggleActivation}
+                                disabled={nodesCount === 0}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all border ${isActive
+                                    ? 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20'
+                                    : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-700/50'
+                                    } disabled:opacity-30 disabled:cursor-not-allowed`}
+                                title={isActive ? 'Deactivate workflow' : 'Activate workflow'}
+                            >
+                                <Power size={14} className={isActive ? 'animate-pulse' : ''} />
+                                <span className="hidden sm:inline">{isActive ? 'Active' : 'Inactive'}</span>
+                            </button>
+                        </>
+                    )}
+
+                    {/* Test Mode Button */}
+                    {hasActiveWorkflow && (
+                        <button
+                            onClick={onTestMode}
+                            disabled={nodesCount === 0}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all border bg-indigo-500/10 text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/20 disabled:opacity-30 disabled:cursor-not-allowed ml-1"
+                            title="Run workflow in test mode"
+                        >
+                            <Zap size={14} />
+                            <span className="hidden sm:inline">Test</span>
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center gap-2 md:gap-3">
-                {/* Active Nodes Counter */}
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 rounded-lg border border-slate-700/50">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_5px_rgba(16,185,129,0.5)]"></div>
-                    <span className="text-xs font-mono text-slate-300">{nodesCount}</span>
+            <div className="flex items-center gap-3">
+                {/* Tools Group */}
+                <div className="flex items-center bg-slate-800/30 rounded-lg p-1 gap-1 border border-slate-800">
+                    {/* Active Nodes Counter */}
+                    <div className="flex items-center gap-2 px-2 py-1 bg-slate-800/50 rounded text-slate-400" title="Active Nodes">
+                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_5px_rgba(16,185,129,0.5)]"></div>
+                        <span className="text-[10px] font-mono">{nodesCount}</span>
+                    </div>
+
+                    <div className="w-px h-4 bg-slate-700 mx-1"></div>
+
+                    <button
+                        onClick={() => setIsGuidedMode(!isGuidedMode)}
+                        className={`flex items-center gap-2 px-2 py-1 rounded text-xs font-medium transition-all ${isGuidedMode
+                            ? 'bg-indigo-500/20 text-indigo-300'
+                            : 'text-slate-500 hover:text-slate-300 hover:bg-slate-700/50'
+                            }`}
+                        title={t('guidedMode')}
+                    >
+                        <LifeBuoy size={14} />
+                    </button>
+
+                    {onRestartTutorial && (
+                        <button
+                            onClick={onRestartTutorial}
+                            className="flex items-center gap-2 px-2 py-1 rounded text-xs font-medium transition-all text-purple-400 hover:bg-purple-500/10"
+                            title="Interactive Tutorial"
+                        >
+                            <GraduationCap size={14} />
+                        </button>
+                    )}
                 </div>
 
-                <button
-                    onClick={() => setIsGuidedMode(!isGuidedMode)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${isGuidedMode
-                        ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.3)]'
-                        : 'bg-transparent text-slate-500 border-transparent hover:bg-slate-800 hover:text-slate-300'
-                        }`}
-                >
-                    <LifeBuoy size={16} className={isGuidedMode ? 'animate-pulse' : ''} />
-                    <span className="hidden sm:inline text-xs font-bold">{t('guidedMode')}</span>
-                </button>
-
-                {onRestartTutorial && (
-                    <button
-                        onClick={onRestartTutorial}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-purple-500/10 text-purple-400 border border-purple-500/30 hover:bg-purple-500/20"
-                        title="Reiniciar tutorial interactivo"
-                    >
-                        <GraduationCap size={16} />
-                        <span className="hidden sm:inline">Tutorial</span>
-                    </button>
-                )}
-
-                {/* Language Selector */}
+                {/* Language (Compact) */}
                 <div className="relative">
                     <button
                         ref={langButtonRef}
                         onClick={() => setShowLanguageModal(!showLanguageModal)}
-                        className="px-3 py-1.5 rounded-md bg-[#181B21] border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white hover:border-indigo-500 transition-all flex items-center gap-2"
+                        className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-800 text-xs transition-colors"
+                        title={LANGUAGES.find(l => l.code === lang)?.name}
                     >
-                        <Globe size={14} /> {LANGUAGES.find(l => l.code === lang)?.flag} {LANGUAGES.find(l => l.code === lang)?.code.toUpperCase()}
+                        {LANGUAGES.find(l => l.code === lang)?.flag}
                     </button>
                     <LanguageModal
                         isOpen={showLanguageModal}
@@ -113,44 +160,55 @@ export const Header = React.memo<HeaderProps>(({
                     />
                 </div>
 
-
-                <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 mr-2 border-l border-slate-700 pl-3">
-                    <Save size={12} /><span>{t('autoSaving')}</span>
+                <div className="hidden sm:flex items-center gap-2 text-[10px] text-slate-600 border-l border-slate-800 pl-3">
+                    <Save size={10} /><span>{t('autoSaving')}</span>
                 </div>
-                <button onClick={() => setShowJson(true)} disabled={nodesCount === 0} className="text-indigo-400 hover:text-indigo-300 disabled:opacity-30 transition-colors p-2 hover:bg-white/5 rounded-full">
-                    <Code size={20} />
-                </button>
-                <div className="h-6 w-px bg-slate-700 mx-2" />
 
-                {/* Auth Button */}
+                <button onClick={() => setShowJson(true)} disabled={nodesCount === 0} className="text-slate-500 hover:text-indigo-400 disabled:opacity-30 transition-colors">
+                    <Code size={16} />
+                </button>
+
+                <div className="h-5 w-px bg-slate-800 mx-1" />
+
+                {/* History Button */}
+                {user && onShowHistory && (
+                    <button
+                        onClick={onShowHistory}
+                        className="text-slate-500 hover:text-indigo-400 transition-colors p-1"
+                        title="Execution History"
+                    >
+                        <History size={18} />
+                    </button>
+                )}
+
+                {/* Auth & Profile (Compact) */}
                 {user ? (
-                    <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 rounded-lg border border-slate-700/50">
-                            <UserIcon size={14} className="text-indigo-400" />
-                            <span className="text-xs text-slate-300">{user.email}</span>
+                    <div className="flex items-center gap-2 ml-2">
+                        <div className="w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400" title={user.email}>
+                            <UserIcon size={14} />
                         </div>
                         <button
                             onClick={onLogout}
-                            className="text-slate-400 hover:text-red-400 transition-colors p-2 hover:bg-white/5 rounded-full"
+                            className="text-slate-500 hover:text-red-400 transition-colors p-1"
                             title="Logout"
                         >
-                            <LogOut size={18} />
+                            <LogOut size={16} />
                         </button>
                     </div>
                 ) : (
                     <button
                         onClick={onShowAuth}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-all"
+                        className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md text-xs font-bold transition-all ml-2"
                     >
                         <LogIn size={14} />
                         <span>Login</span>
                     </button>
                 )}
 
-                <div className="h-6 w-px bg-slate-700 mx-2" />
-                <a href="https://docs.n8n.io" target="_blank" rel="noreferrer" className="bg-[#EA4B71] hover:bg-[#D43D60] text-white px-3 py-1.5 rounded-md text-xs font-bold transition-all shadow-lg hover:shadow-[#EA4B71]/30 flex items-center gap-1.5">
-                    <FileText size={12} /> <span>Docs</span>
+                <a href="https://docs.n8n.io" target="_blank" rel="noreferrer" className="text-slate-600 hover:text-slate-400 transition-colors ml-1" title="Documentation">
+                    <FileText size={16} />
                 </a>
+
             </div>
         </header>
     )

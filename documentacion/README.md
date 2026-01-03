@@ -23,39 +23,38 @@ Una experiencia de usuario diseñada para la velocidad y la claridad:
 *   **Diseño Glassmorphism:** Interfaz moderna, oscura y translúcida que reduce la fatiga visual.
 *   **Tutorial Interactivo:** Sistema de onboarding inmersivo con detecciones de acción en tiempo real, punteros animados y spotlight.
 
-### ⚙️ 3. Motor de Ejecución Seguro
-*   **Sandbox Lógico:** Evaluaciones de condiciones (`IF`, `Switch`) ejecutadas en un entorno aislado (`expr-eval`) para máxima seguridad.
-*   **Traza de Ejecución:** Logs detallados paso a paso con timestamps y estados (Éxito/Error).
-*   **Persistencia:** Historial completo de ejecuciones guardado en **Supabase**.
+### 🛡️ 5. Seguridad y Gobernanza
+*   **Gestión de Credenciales:** Los tokens de API y contraseñas se manejan con el tipo de campo `credential`, asegurando que nunca se expongan en texto plano en la interfaz.
+*   **Validación Estricta:** Campos obligatorios y lógica condicional para prevenir errores de configuración.
 
-### 🌍 4. Internacionalización Total
-*   Soporte nativo para **+10 idiomas** (ES, EN, FR, DE, JP, etc.).
-*   Detección automática de idioma y selector compacto con banderas ISO.
+### 🔌 6. Interoperabilidad (n8n)
+*   **Exportación Nativa:** Tus flujos no están atrapados. Exporta cualquier workflow a formato JSON compatible 100% con **n8n**, permitiendo un camino de migración directo a producción enterprise.
 
 ---
 
-## 🧩 Catálogo de Nodos
+## 🧩 Catálogo de Nodos (+60 Integraciones)
 
-AutoFlow Pro soporta una amplia gama de integraciones organizadas por categorías:
+AutoFlow Pro ahora cuenta con un catálogo masivo para cubrir todas las necesidades empresariales:
 
-| Categoría | Nodos Soportados |
+| Categoría | Integraciones Destacadas |
 | :--- | :--- |
-| **🤖 IA & ML** | Google Gemini, OpenAI (GPT-4), Stability AI (Imagen), LangChain |
-| **⚡ Core Lógico** | IF Condition, Switch, Merge, Wait, Set Variable, Cron (Schedule) |
-| **🌐 Web & API** | Webhook, HTTP Request (REST), HTML Parser |
-| **💬 Mensajería** | Telegram Bot, WhatsApp Business, Slack, Discord |
-| **💼 Productividad** | Google Suite (Sheets, Drive, Calendar, Gmail), Notion, Jira, Trello |
-| **☁️ Cloud/Dev** | AWS S3, Stripe, MySQL, PostgreSQL, SSH, GitHub |
+| **🤖 IA & ML** | Google Gemini (Pro/Flash), OpenAI (GPT-4), Stability AI, LangChain, Pinecone, HuggingFace, Claude |
+| **💼 Productividad** | Microsoft To Do, Todoist, Outlook, Google Tasks, Evernote, Slack, Microsoft Teams, Zoom, Notion |
+| **📣 Marketing & CRM** | Salesforce, HubSpot, ActiveCampaign, MailerLite, Brevo, ConvertKit, Pipedrive, Customer.io |
+| **🛠️ DevOps & Cloud** | Docker 🐳, Kubernetes, AWS (Lambda, S3, SNS, SQS, EventBridge), Jenkins, CircleCI, Sentry, Grafana |
+| **🗄️ Datos & CMS** | Snowflake ❄️, MongoDB, MySQL, Postgres, Elasticsearch, Redis, Supabase, WordPress, Strapi |
+| **⚡ Core & Utils** | Listas, Webhooks, Cron, Switch, Merge, JSON/HTML Parsers, Ejecución de Comandos Shell |
+| **💸 Finanzas** | PayPal, Stripe, Wise, QuickBooks, WooCommerce, Shopify |
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
-*   **Frontend:** React 19, TypeScript, Vite 6.
-*   **Estilos:** TailwindCSS, Lucide Icons.
+*   **Frontend:** React, TypeScript, Vite.
+*   **Estilos:** TailwindCSS, Lucide Icons (Diseño Glassmorphism).
 *   **IA:** Google Generative AI SDK, Groq SDK.
 *   **Backend/DB:** Supabase (PostgreSQL + Auth).
-*   **Seguridad:** `expr-eval` para matemáticas seguras y parsing lógico.
+*   **Compatibilidad:** Capa de interporabilidad con esquemas de n8n v1.
 
 ---
 

@@ -13,7 +13,40 @@ export type NodeType =
   | 'mysql' | 'postgres' | 'airtable'
   | 'aws' | 'stripe' | 'http' | 'code' | 'generic'
   | 'github' | 'gitlab' | 'ssh' | 'ftp'
-  | 'mailchimp' | 'salesforce' | 'facebook' | 'instagram';
+  | 'graphql' | 'htmlExtract' | 'jsonSchema' | 'xml' | 'markdown' | 'stickyNote'
+  | 'mailchimp' | 'salesforce' | 'facebook' | 'instagram'
+  | 'claude' | 'huggingFace' | 'pinecone'
+  | 'reddit' | 'linkedin' | 'twitter' | 'medium'
+  | 'dropbox' | 'onedrive'
+  | 'redis' | 'mongodb' | 'supabase' | 'firebase'
+  | 'intercom' | 'zendesk' | 'freshdesk'
+  | 'monday' | 'pipedrive' | 'jotform' | 'surveyMonkey'
+  | 'sendgrid' | 'twilio'
+  | 'sns' | 'sqs' | 'lambda' | 'eventbridge'
+  | 'kafka' | 'mqtt' | 'amqp'
+  // --- EXPANSION PACK V2 (50+ NEW NODES) ---
+  // Productivity
+  | 'microsoftToDo' | 'todoist' | 'evernote' | 'microsoftOutlook' | 'googleTasks'
+  // Marketing & CRM
+  | 'activeCampaign' | 'mailerLite' | 'brevo' | 'convertKit' | 'getResponse'
+  | 'keap' | 'customerio' | 'drip'
+  // Communication
+  | 'mattermost' | 'rocketchat' | 'matrix' | 'pushbullet' | 'pushover'
+  // Dev & Infra
+  | 'docker' | 'kubernetes' | 'sentry' | 'grafana' | 'jenkins'
+  | 'circleci' | 'travisci' | 'pagerduty' | 'uptimeRobot'
+  // Data & Storage
+  | 'mariadb' | 'snowflake' | 'elasticsearch' | 'couchdb' | 'dynamodb' | 'mssql'
+  // CMS
+  | 'wordpress' | 'contentful' | 'strapi' | 'ghost' | 'webflow' | 'bubble'
+  // Finance
+  | 'paypal' | 'wise' | 'quickbooks' | 'xero' | 'wave'
+  // Time & Projects
+  | 'harvest' | 'toggl' | 'basecamp' | 'linear'
+  // Files
+  | 'box' | 'nextcloud'
+  // Utilities
+  | 'spreadsheetFile' | 'readBinaryFile' | 'writeBinaryFile' | 'executeCommand' | 'itemLists' | 'moveBinaryData' | 'compression';
 
 export type Category = 'trigger' | 'core' | 'ai' | 'google' | 'msg' | 'data' | 'app' | 'cloud' | 'dev';
 
@@ -28,10 +61,23 @@ export interface Viewport {
 export interface Field {
   name: string;
   label: string;
-  type: 'text' | 'number' | 'select' | 'textarea' | 'toggle' | 'json';
-  options?: string[];
+  type: 'text' | 'number' | 'select' | 'textarea' | 'toggle' | 'json' | 'credential' | 'date';
+  options?: string[]; // For select type
   placeholder?: string;
-  help?: string;
+  help?: string; // Translation key for tooltip
+  defaultValue?: any;
+
+  // Validation & Logic
+  required?: boolean;
+  validation?: {
+    regex?: string;
+    min?: number;
+    max?: number;
+  };
+  displayCondition?: {
+    field: string;
+    value: string | string[] | number | boolean;
+  };
 }
 
 export interface NodeTemplate {

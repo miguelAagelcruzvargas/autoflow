@@ -4,8 +4,12 @@ import {
   Database, GitBranch, Terminal,
   Cloud, CreditCard, Pause, Split, Merge, Image,
   Phone, Users, Briefcase, Calendar, Video, Folder,
-  Box, Link, Variable
+  Box, Link, Variable,
+  FileJson, FileCode, Search, StickyNote, Activity, FileText,
+  // New Icons for Expansion
+  CheckSquare, ListChecks, AlertOctagon, Server, HardDrive, DollarSign, Shield, Megaphone, Radio, Layers, Shuffle, Command, Hammer, Truck, Lock, Unlock, Archive, Save, Upload, Download, Copy, Play
 } from 'lucide-react';
+
 import { Category, NodeTemplate, GuideTip } from './types';
 
 export const CATEGORIES: Record<Category, string> = {
@@ -153,7 +157,7 @@ export const NODE_CATALOG: NodeTemplate[] = [
   {
     type: 'webhook', name: 'Webhook', icon: Zap, category: 'trigger',
     color: 'text-pink-400', bg: 'bg-pink-500/10', border: 'border-pink-500/50',
-    desc: 'Receive HTTP data',
+    desc: 'Recibir datos HTTP',
     n8nType: 'n8n-nodes-base.webhook',
     n8nVersion: 2,
     fields: [
@@ -164,7 +168,7 @@ export const NODE_CATALOG: NodeTemplate[] = [
   {
     type: 'cron', name: 'Cron Schedule', icon: Clock, category: 'trigger',
     color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/50',
-    desc: 'Run periodically',
+    desc: 'Ejecutar periódicamente',
     n8nType: 'n8n-nodes-base.cron',
     n8nVersion: 1,
     fields: [{ name: 'mode', label: 'Mode', type: 'select', options: ['everyMinute', 'everyHour', 'everyDay', 'custom'], help: 'cron' }]
@@ -231,7 +235,7 @@ export const NODE_CATALOG: NodeTemplate[] = [
   {
     type: 'if', name: 'IF Condition', icon: GitBranch, category: 'core',
     color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/50',
-    desc: 'Branch Flow',
+    desc: 'Bifurcar Flujo',
     n8nType: 'n8n-nodes-base.if',
     n8nVersion: 2, // Updated to v2 (not v1)
     fields: [{ name: 'conditions', label: 'Condition', type: 'textarea', placeholder: '{{json.value}} > 10', help: 'conditions' }]
@@ -247,7 +251,7 @@ export const NODE_CATALOG: NodeTemplate[] = [
   {
     type: 'merge', name: 'Merge', icon: Merge, category: 'core',
     color: 'text-slate-300', bg: 'bg-slate-800', border: 'border-slate-600',
-    desc: 'Join Paths',
+    desc: 'Unir Caminos',
     n8nType: 'n8n-nodes-base.merge',
     n8nVersion: 3, // Updated to v3
     fields: [{ name: 'mode', label: 'Mode', type: 'select', options: ['append', 'combine', 'wait'], help: 'mode' }]
@@ -273,7 +277,7 @@ export const NODE_CATALOG: NodeTemplate[] = [
   {
     type: 'gemini', name: 'Google Gemini', icon: Sparkles, category: 'ai',
     color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/50',
-    desc: 'Generative Text',
+    desc: 'Texto Generativo',
     n8nType: 'n8n-nodes-base.googleGemini',
     n8nVersion: 1,
     fields: [
@@ -327,7 +331,7 @@ export const NODE_CATALOG: NodeTemplate[] = [
     n8nType: 'n8n-nodes-base.telegram',
     n8nVersion: 1,
     fields: [
-      { name: 'botToken', label: 'Bot Token', type: 'text', placeholder: '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11', help: 'telegramToken' },
+      { name: 'botToken', label: 'Bot Token', type: 'credential', placeholder: '123456:ABC-DEF...', help: 'telegramToken', required: true },
       { name: 'chatId', label: 'Chat ID', type: 'text', help: 'telegramChatId' },
       { name: 'text', label: 'Message', type: 'textarea', help: 'text' }
     ]
@@ -608,7 +612,54 @@ export const NODE_CATALOG: NodeTemplate[] = [
     fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['post', 'user'], help: 'operation' }]
   },
 
-  // --- UNIVERSAL NODE ---
+  {
+    type: 'graphql', name: 'GraphQL', icon: Activity, category: 'dev',
+    color: 'text-pink-400', bg: 'bg-pink-500/10', border: 'border-pink-500/50',
+    desc: 'Query API',
+    n8nType: 'n8n-nodes-base.graphql',
+    n8nVersion: 1,
+    fields: [{ name: 'endpoint', label: 'Endpoint', type: 'text', help: 'url' }, { name: 'query', label: 'Query', type: 'textarea', help: 'query' }]
+  },
+  {
+    type: 'htmlExtract', name: 'HTML Extract', icon: Search, category: 'dev',
+    color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/50',
+    desc: 'Web Scraping',
+    n8nType: 'n8n-nodes-base.htmlExtract',
+    n8nVersion: 1,
+    fields: [{ name: 'url', label: 'URL', type: 'text', help: 'url' }, { name: 'selectors', label: 'CSS Selectors', type: 'textarea', help: 'selectors' }]
+  },
+  {
+    type: 'jsonSchema', name: 'JSON Validate', icon: FileJson, category: 'dev',
+    color: 'text-blue-300', bg: 'bg-blue-900/20', border: 'border-blue-500/50',
+    desc: 'Validate Data',
+    n8nType: 'n8n-nodes-base.jsonSchema',
+    n8nVersion: 1,
+    fields: [{ name: 'schema', label: 'JSON Schema', type: 'textarea', help: 'schema' }]
+  },
+  {
+    type: 'xml', name: 'XML Parser', icon: FileCode, category: 'dev',
+    color: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/50',
+    desc: 'Parse/Build XML',
+    n8nType: 'n8n-nodes-base.xml',
+    n8nVersion: 1,
+    fields: [{ name: 'mode', label: 'Mode', type: 'select', options: ['jsonToXml', 'xmlToJson'], help: 'mode' }]
+  },
+  {
+    type: 'markdown', name: 'Markdown', icon: FileText, category: 'dev',
+    color: 'text-slate-200', bg: 'bg-slate-700/50', border: 'border-slate-500/50',
+    desc: 'Render Text',
+    n8nType: 'n8n-nodes-base.markdown',
+    n8nVersion: 1,
+    fields: [{ name: 'content', label: 'Content', type: 'textarea', help: 'content' }]
+  },
+  {
+    type: 'stickyNote', name: 'Sticky Note', icon: StickyNote, category: 'dev',
+    color: 'text-yellow-200', bg: 'bg-yellow-400/20', border: 'border-yellow-400/50',
+    desc: 'Add Comments',
+    n8nType: 'n8n-nodes-base.stickyNote',
+    n8nVersion: 1,
+    fields: [{ name: 'content', label: 'Note', type: 'textarea', help: 'content' }]
+  },
   {
     type: 'generic', name: 'Generic', icon: Box, category: 'dev',
     color: 'text-slate-200', bg: 'bg-slate-700', border: 'border-slate-500',
@@ -616,5 +667,440 @@ export const NODE_CATALOG: NodeTemplate[] = [
     n8nType: 'n8n-nodes-base.set',
     n8nVersion: 1,
     fields: []
+  },
+  // --- AI EXTENDED ---
+  {
+    type: 'claude', name: 'Anthropic Claude', icon: Bot, category: 'ai',
+    color: 'text-orange-300', bg: 'bg-orange-900/20', border: 'border-orange-500/50',
+    desc: 'LLM Chat',
+    n8nType: 'n8n-nodes-base.anthropic',
+    n8nVersion: 1,
+    fields: [{ name: 'model', label: 'Model', type: 'select', options: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'] }, { name: 'prompt', label: 'Prompt', type: 'textarea' }]
+  },
+  {
+    type: 'huggingFace', name: 'Hugging Face', icon: Bot, category: 'ai',
+    color: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/50',
+    desc: 'Open Source Models',
+    n8nType: 'n8n-nodes-base.huggingFace',
+    n8nVersion: 1,
+    fields: [{ name: 'model', label: 'Model ID', type: 'text' }, { name: 'task', label: 'Task', type: 'text' }]
+  },
+  {
+    type: 'pinecone', name: 'Pinecone', icon: Database, category: 'ai',
+    color: 'text-cyan-400', bg: 'bg-cyan-900/20', border: 'border-cyan-500/50',
+    desc: 'Vector DB',
+    n8nType: 'n8n-nodes-base.pinecone',
+    n8nVersion: 1,
+    fields: [{ name: 'operation', label: 'Operation', type: 'select', options: ['upsert', 'query', 'delete'] }]
+  },
+
+  // --- SOCIAL ---
+  {
+    type: 'twitter', name: 'X (Twitter)', icon: Globe, category: 'msg',
+    color: 'text-slate-200', bg: 'bg-slate-800', border: 'border-slate-600',
+    desc: 'Post Tweets',
+    n8nType: 'n8n-nodes-base.twitter',
+    n8nVersion: 1,
+    fields: [{ name: 'text', label: 'Tweet Text', type: 'textarea' }]
+  },
+  {
+    type: 'linkedin', name: 'LinkedIn', icon: Briefcase, category: 'msg',
+    color: 'text-blue-600', bg: 'bg-blue-900/20', border: 'border-blue-700/50',
+    desc: 'Professional Network',
+    n8nType: 'n8n-nodes-base.linkedin',
+    n8nVersion: 1,
+    fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['post', 'organization'] }, { name: 'text', label: 'Content', type: 'textarea' }]
+  },
+  {
+    type: 'reddit', name: 'Reddit', icon: MessageSquare, category: 'msg',
+    color: 'text-orange-500', bg: 'bg-orange-900/20', border: 'border-orange-500/50',
+    desc: 'Community',
+    n8nType: 'n8n-nodes-base.reddit',
+    n8nVersion: 1,
+    fields: [{ name: 'operation', label: 'Operation', type: 'select', options: ['post', 'comment'] }, { name: 'subreddit', label: 'Subreddit', type: 'text' }]
+  },
+  {
+    type: 'medium', name: 'Medium', icon: FileText, category: 'msg',
+    color: 'text-white', bg: 'bg-slate-900', border: 'border-slate-500',
+    desc: 'Blog Platform',
+    n8nType: 'n8n-nodes-base.medium',
+    n8nVersion: 1,
+    fields: [{ name: 'title', label: 'Title', type: 'text' }, { name: 'content', label: 'Body (HTML)', type: 'textarea' }]
+  },
+
+  // --- STORAGE ---
+  {
+    type: 'dropbox', name: 'Dropbox', icon: Folder, category: 'cloud',
+    color: 'text-blue-500', bg: 'bg-blue-900/20', border: 'border-blue-500/50',
+    desc: 'Cloud Storage',
+    n8nType: 'n8n-nodes-base.dropbox',
+    n8nVersion: 1,
+    fields: [{ name: 'operation', label: 'Operation', type: 'select', options: ['upload', 'download', 'list'] }]
+  },
+  {
+    type: 'onedrive', name: 'OneDrive', icon: Cloud, category: 'cloud',
+    color: 'text-blue-500', bg: 'bg-blue-900/20', border: 'border-blue-500/50',
+    desc: 'Microsoft Cloud',
+    n8nType: 'n8n-nodes-base.microsoftOneDrive',
+    n8nVersion: 1,
+    fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['file', 'folder'] }]
+  },
+
+  // --- DATABASE EXTENDED ---
+  {
+    type: 'redis', name: 'Redis', icon: Database, category: 'data',
+    color: 'text-red-500', bg: 'bg-red-900/20', border: 'border-red-500/50',
+    desc: 'Key-Value Store',
+    n8nType: 'n8n-nodes-base.redis',
+    n8nVersion: 1,
+    fields: [{ name: 'command', label: 'Command', type: 'text', help: 'SET key val' }]
+  },
+  {
+    type: 'mongodb', name: 'MongoDB', icon: Database, category: 'data',
+    color: 'text-green-500', bg: 'bg-green-900/20', border: 'border-green-500/50',
+    desc: 'NoSQL DB',
+    n8nType: 'n8n-nodes-base.mongoDb',
+    n8nVersion: 1,
+    fields: [{ name: 'collection', label: 'Collection', type: 'text' }, { name: 'operation', label: 'Operation', type: 'select', options: ['find', 'insert', 'update'] }]
+  },
+  {
+    type: 'supabase', name: 'Supabase', icon: Database, category: 'data',
+    color: 'text-emerald-500', bg: 'bg-emerald-900/20', border: 'border-emerald-500/50',
+    desc: 'Postgres+',
+    n8nType: 'n8n-nodes-base.supabase',
+    n8nVersion: 1,
+    fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['database', 'storage'] }]
+  },
+  {
+    type: 'firebase', name: 'Firebase', icon: Cloud, category: 'data',
+    color: 'text-yellow-500', bg: 'bg-yellow-900/20', border: 'border-yellow-500/50',
+    desc: 'Realtime DB',
+    n8nType: 'n8n-nodes-base.firebaseRealtimeDatabase',
+    n8nVersion: 1,
+    fields: [{ name: 'path', label: 'Path', type: 'text' }, { name: 'operation', label: 'Operation', type: 'select', options: ['get', 'set', 'push'] }]
+  },
+
+  // --- SUPPORT & CRM ---
+  {
+    type: 'intercom', name: 'Intercom', icon: MessageSquare, category: 'app',
+    color: 'text-blue-500', bg: 'bg-blue-900/20', border: 'border-blue-500/50',
+    desc: 'Customer Chat',
+    n8nType: 'n8n-nodes-base.intercom',
+    n8nVersion: 1,
+    fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['contact', 'conversation'] }]
+  },
+  {
+    type: 'zendesk', name: 'Zendesk', icon: Activity, category: 'app',
+    color: 'text-green-600', bg: 'bg-green-900/20', border: 'border-green-600/50',
+    desc: 'Support Tickets',
+    n8nType: 'n8n-nodes-base.zendesk',
+    n8nVersion: 1,
+    fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['ticket', 'user'] }]
+  },
+  {
+    type: 'freshdesk', name: 'Freshdesk', icon: Activity, category: 'app',
+    color: 'text-emerald-500', bg: 'bg-emerald-900/20', border: 'border-emerald-500/50',
+    desc: 'Helpdesk',
+    n8nType: 'n8n-nodes-base.freshdesk',
+    n8nVersion: 1,
+    fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['ticket', 'contact'] }]
+  },
+
+  // --- PRODUCTIVITY ---
+  {
+    type: 'monday', name: 'Monday.com', icon: FileSpreadsheet, category: 'app',
+    color: 'text-red-400', bg: 'bg-red-900/20', border: 'border-red-500/50',
+    desc: 'Work OS',
+    n8nType: 'n8n-nodes-base.mondayCom',
+    n8nVersion: 1,
+    fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['board', 'item'] }]
+  },
+  {
+    type: 'pipedrive', name: 'Pipedrive', icon: Users, category: 'app',
+    color: 'text-green-400', bg: 'bg-green-900/20', border: 'border-green-500/50',
+    desc: 'Sales CRM',
+    n8nType: 'n8n-nodes-base.pipedrive',
+    n8nVersion: 1,
+    fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['deal', 'person'] }]
+  },
+  {
+    type: 'jotform', name: 'JotForm', icon: LayoutTemplate, category: 'app',
+    color: 'text-orange-500', bg: 'bg-orange-900/20', border: 'border-orange-500/50',
+    desc: 'Form Builder',
+    n8nType: 'n8n-nodes-base.jotForm',
+    n8nVersion: 1,
+    fields: [{ name: 'formId', label: 'Form ID', type: 'text' }]
+  },
+  {
+    type: 'surveyMonkey', name: 'SurveyMonkey', icon: LayoutTemplate, category: 'app',
+    color: 'text-green-500', bg: 'bg-green-900/20', border: 'border-green-500/50',
+    desc: 'Surveys',
+    n8nType: 'n8n-nodes-base.surveyMonkey',
+    n8nVersion: 1,
+    fields: [{ name: 'surveyId', label: 'Survey ID', type: 'text' }]
+  },
+
+  // --- MARKETING ---
+  {
+    type: 'sendgrid', name: 'SendGrid', icon: Mail, category: 'app',
+    color: 'text-blue-500', bg: 'bg-blue-900/20', border: 'border-blue-500/50',
+    desc: 'Email API',
+    n8nType: 'n8n-nodes-base.sendGrid',
+    n8nVersion: 1,
+    fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['contact', 'list'] }]
+  },
+  {
+    type: 'twilio', name: 'Twilio', icon: Phone, category: 'app',
+    color: 'text-red-500', bg: 'bg-red-900/20', border: 'border-red-500/50',
+    desc: 'SMS & Voice',
+    n8nType: 'n8n-nodes-base.twilio',
+    n8nVersion: 1,
+    fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['sms', 'call'] }]
+  },
+
+  // --- AWS / CLOUD ---
+  {
+    type: 'sns', name: 'AWS SNS', icon: Activity, category: 'cloud',
+    color: 'text-orange-400', bg: 'bg-orange-900/20', border: 'border-orange-500/50',
+    desc: 'Notification',
+    n8nType: 'n8n-nodes-base.awsSns',
+    n8nVersion: 1,
+    fields: [{ name: 'topicArn', label: 'Topic ARN', type: 'text' }, { name: 'message', label: 'Message', type: 'text' }]
+  },
+  {
+    type: 'sqs', name: 'AWS SQS', icon: Activity, category: 'cloud',
+    color: 'text-yellow-400', bg: 'bg-yellow-900/20', border: 'border-yellow-500/50',
+    desc: 'Queue',
+    n8nType: 'n8n-nodes-base.awsSqs',
+    n8nVersion: 1,
+    fields: [{ name: 'queueUrl', label: 'Queue URL', type: 'text' }, { name: 'message', label: 'Message', type: 'text' }]
+  },
+  {
+    type: 'lambda', name: 'AWS Lambda', icon: Terminal, category: 'cloud',
+    color: 'text-orange-500', bg: 'bg-orange-900/20', border: 'border-orange-500/50',
+    desc: 'Serverless',
+    n8nType: 'n8n-nodes-base.awsLambda',
+    n8nVersion: 1,
+    fields: [{ name: 'functionName', label: 'Function', type: 'text' }, { name: 'payload', label: 'Payload', type: 'text' }]
+  },
+  {
+    type: 'eventbridge', name: 'EventBridge', icon: Activity, category: 'cloud',
+    color: 'text-pink-500', bg: 'bg-pink-900/20', border: 'border-pink-500/50',
+    desc: 'Event Bus',
+    n8nType: 'n8n-nodes-base.awsEventBridge',
+    n8nVersion: 1,
+    fields: [{ name: 'source', label: 'Source', type: 'text' }, { name: 'detailType', label: 'Detail Type', type: 'text' }]
+  },
+
+  // --- QUEUES & BROKERS ---
+  {
+    type: 'kafka', name: 'Kafka', icon: Activity, category: 'cloud',
+    color: 'text-white', bg: 'bg-slate-900', border: 'border-slate-500',
+    desc: 'Event Streaming',
+    n8nType: 'n8n-nodes-base.kafka',
+    n8nVersion: 1,
+    fields: [{ name: 'topic', label: 'Topic', type: 'text' }, { name: 'message', label: 'Message', type: 'text' }]
+  },
+  {
+    type: 'mqtt', name: 'MQTT', icon: Activity, category: 'cloud',
+    color: 'text-purple-400', bg: 'bg-purple-900/20', border: 'border-purple-500/50',
+    desc: 'IoT Protocol',
+    n8nType: 'n8n-nodes-base.mqtt',
+    n8nVersion: 1,
+    fields: [{ name: 'topic', label: 'Topic', type: 'text' }, { name: 'message', label: 'Message', type: 'text' }]
+  },
+  {
+    type: 'amqp', name: 'AMQP / RabbitMQ', icon: Activity, category: 'cloud',
+    color: 'text-orange-500', bg: 'bg-orange-900/20', border: 'border-orange-500/50',
+    desc: 'Msg Broker',
+    n8nType: 'n8n-nodes-base.amqp',
+    n8nVersion: 1,
+    fields: [{ name: 'queue', label: 'Queue', type: 'text' }, { name: 'message', label: 'Message', type: 'text' }]
+  },
+
+  // --- EXPANSION: PRODUCTIVITY ---
+  {
+    type: 'microsoftToDo', name: 'Microsoft To Do', icon: CheckSquare, category: 'app',
+    color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/50', desc: 'Task Management',
+    n8nType: 'n8n-nodes-base.microsoftToDo', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['task', 'list'] }]
+  },
+  {
+    type: 'todoist', name: 'Todoist', icon: ListChecks, category: 'app',
+    color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/50', desc: 'Task Management',
+    n8nType: 'n8n-nodes-base.todoist', n8nVersion: 1, fields: [{ name: 'content', label: 'Task Content', type: 'text' }]
+  },
+  {
+    type: 'evernote', name: 'Evernote', icon: FileText, category: 'app',
+    color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/50', desc: 'Note Taking',
+    n8nType: 'n8n-nodes-base.evernote', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['note', 'notebook'] }]
+  },
+  {
+    type: 'microsoftOutlook', name: 'Outlook', icon: Mail, category: 'app',
+    color: 'text-blue-500', bg: 'bg-blue-600/10', border: 'border-blue-500/50', desc: 'Email & Calendar',
+    n8nType: 'n8n-nodes-base.microsoftOutlook', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['message', 'event'] }]
+  },
+  {
+    type: 'googleTasks', name: 'Google Tasks', icon: CheckSquare, category: 'google',
+    color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/50', desc: 'Task Management',
+    n8nType: 'n8n-nodes-base.googleTasks', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['task', 'tasklist'] }]
+  },
+
+  // --- EXPANSION: MARKETING ---
+  {
+    type: 'activeCampaign', name: 'ActiveCampaign', icon: Megaphone, category: 'app',
+    color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/50', desc: 'Marketing Automation',
+    n8nType: 'n8n-nodes-base.activeCampaign', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['contact', 'deal'] }]
+  },
+  {
+    type: 'mailerLite', name: 'MailerLite', icon: Mail, category: 'app',
+    color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/50', desc: 'Email Marketing',
+    n8nType: 'n8n-nodes-base.mailerLite', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['subscriber', 'campaign'] }]
+  },
+  {
+    type: 'brevo', name: 'Brevo (Sendinblue)', icon: Mail, category: 'app',
+    color: 'text-pink-500', bg: 'bg-pink-500/10', border: 'border-pink-500/50', desc: 'CRM Suite',
+    n8nType: 'n8n-nodes-base.brevo', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['contact', 'email'] }]
+  },
+  {
+    type: 'convertKit', name: 'ConvertKit', icon: Mail, category: 'app',
+    color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/50', desc: 'Creator Marketing',
+    n8nType: 'n8n-nodes-base.convertKit', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['subscriber', 'tag'] }]
+  },
+  {
+    type: 'getResponse', name: 'GetResponse', icon: Mail, category: 'app',
+    color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/50', desc: 'Email Marketing',
+    n8nType: 'n8n-nodes-base.getResponse', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['contact', 'campaign'] }]
+  },
+
+  // --- EXPANSION: COMM ---
+  {
+    type: 'mattermost', name: 'Mattermost', icon: MessageSquare, category: 'msg',
+    color: 'text-slate-200', bg: 'bg-slate-700', border: 'border-slate-500', desc: 'Team Chat',
+    n8nType: 'n8n-nodes-base.mattermost', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['message', 'channel'] }]
+  },
+  {
+    type: 'rocketchat', name: 'Rocket.Chat', icon: MessageSquare, category: 'msg',
+    color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/50', desc: 'Team Chat',
+    n8nType: 'n8n-nodes-base.rocketchat', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['message', 'group'] }]
+  },
+  {
+    type: 'matrix', name: 'Matrix', icon: MessageSquare, category: 'msg',
+    color: 'text-white', bg: 'bg-slate-900', border: 'border-slate-500', desc: 'Secure Chat',
+    n8nType: 'n8n-nodes-base.matrix', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['room', 'message'] }]
+  },
+  {
+    type: 'pushbullet', name: 'Pushbullet', icon: Radio, category: 'msg',
+    color: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/50', desc: 'Notifications',
+    n8nType: 'n8n-nodes-base.pushbullet', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['push'] }]
+  },
+
+  // --- EXPANSION: DEV & INFRA ---
+  {
+    type: 'docker', name: 'Docker', icon: Server, category: 'dev',
+    color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/50', desc: 'Container Mgmt',
+    n8nType: 'n8n-nodes-base.docker', n8nVersion: 1, fields: [{ name: 'action', label: 'Action', type: 'select', options: ['list', 'start', 'stop'] }]
+  },
+  {
+    type: 'sentry', name: 'Sentry', icon: AlertOctagon, category: 'dev',
+    color: 'text-pink-500', bg: 'bg-pink-500/10', border: 'border-pink-500/50', desc: 'Error Tracking',
+    n8nType: 'n8n-nodes-base.sentry', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['issue', 'event'] }]
+  },
+  {
+    type: 'grafana', name: 'Grafana', icon: Activity, category: 'dev',
+    color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/50', desc: 'Monitoring',
+    n8nType: 'n8n-nodes-base.grafana', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['dashboard', 'alert'] }]
+  },
+  {
+    type: 'jenkins', name: 'Jenkins', icon: Hammer, category: 'dev',
+    color: 'text-slate-300', bg: 'bg-slate-700', border: 'border-slate-500', desc: 'CI/CD',
+    n8nType: 'n8n-nodes-base.jenkins', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['build', 'job'] }]
+  },
+  {
+    type: 'circleci', name: 'CircleCI', icon: Hammer, category: 'dev',
+    color: 'text-slate-400', bg: 'bg-slate-800', border: 'border-slate-500', desc: 'CI/CD Platform',
+    n8nType: 'n8n-nodes-base.circleCi', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['pipeline', 'workflow'] }]
+  },
+
+  // --- EXPANSION: DATA ---
+  {
+    type: 'snowflake', name: 'Snowflake', icon: HardDrive, category: 'data',
+    color: 'text-blue-300', bg: 'bg-blue-500/10', border: 'border-blue-500/50', desc: 'Data Warehouse',
+    n8nType: 'n8n-nodes-base.snowflake', n8nVersion: 1, fields: [{ name: 'operation', label: 'Operation', type: 'select', options: ['executeQuery', 'insert'] }, { name: 'query', label: 'SQL', type: 'textarea' }]
+  },
+  {
+    type: 'elasticsearch', name: 'Elasticsearch', icon: Search, category: 'data',
+    color: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/50', desc: 'Search Engine',
+    n8nType: 'n8n-nodes-base.elasticsearch', n8nVersion: 1, fields: [{ name: 'operation', label: 'Operation', type: 'select', options: ['search', 'index'] }]
+  },
+  {
+    type: 'mariadb', name: 'MariaDB', icon: Database, category: 'data',
+    color: 'text-orange-300', bg: 'bg-orange-900/20', border: 'border-orange-500/50', desc: 'SQL Database',
+    n8nType: 'n8n-nodes-base.mySql', n8nVersion: 1, fields: [{ name: 'operation', label: 'Operation', type: 'select', options: ['executeQuery', 'insert'] }]
+  },
+
+  // --- EXPANSION: CMS ---
+  {
+    type: 'wordpress', name: 'WordPress', icon: Layers, category: 'app',
+    color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/50', desc: 'CMS',
+    n8nType: 'n8n-nodes-base.wordpress', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['post', 'page', 'user'] }]
+  },
+  {
+    type: 'strapi', name: 'Strapi', icon: Database, category: 'dev',
+    color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/50', desc: 'Headless CMS',
+    n8nType: 'n8n-nodes-base.strapi', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['entry'] }]
+  },
+  {
+    type: 'contentful', name: 'Contentful', icon: Layers, category: 'app',
+    color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/50', desc: 'Headless CMS',
+    n8nType: 'n8n-nodes-base.contentful', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['entry', 'asset'] }]
+  },
+  {
+    type: 'ghost', name: 'Ghost', icon: FileText, category: 'app',
+    color: 'text-slate-200', bg: 'bg-slate-800', border: 'border-slate-500', desc: 'Publishing',
+    n8nType: 'n8n-nodes-base.ghost', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['post', 'member'] }]
+  },
+
+  // --- EXPANSION: FINANCE ---
+  {
+    type: 'paypal', name: 'PayPal', icon: DollarSign, category: 'cloud',
+    color: 'text-blue-600', bg: 'bg-blue-600/10', border: 'border-blue-600/50', desc: 'Payments',
+    n8nType: 'n8n-nodes-base.paypal', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['payment', 'payout'] }]
+  },
+  {
+    type: 'wise', name: 'Wise', icon: DollarSign, category: 'cloud',
+    color: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/50', desc: 'Transfer',
+    n8nType: 'n8n-nodes-base.wise', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['transfer', 'account'] }]
+  },
+  {
+    type: 'quickbooks', name: 'QuickBooks', icon: FileSpreadsheet, category: 'app',
+    color: 'text-green-600', bg: 'bg-green-900/20', border: 'border-green-500/50', desc: 'Accounting',
+    n8nType: 'n8n-nodes-base.quickbooks', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['invoice', 'customer'] }]
+  },
+
+  // --- EXPANSION: FILES & UTILS ---
+  {
+    type: 'box', name: 'Box', icon: Folder, category: 'cloud',
+    color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/50', desc: 'Cloud Storage',
+    n8nType: 'n8n-nodes-base.box', n8nVersion: 1, fields: [{ name: 'resource', label: 'Resource', type: 'select', options: ['file', 'folder'] }]
+  },
+  {
+    type: 'spreadsheetFile', name: 'Spreadsheet File', icon: FileSpreadsheet, category: 'core',
+    color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/50', desc: 'Read/Write Excel',
+    n8nType: 'n8n-nodes-base.spreadsheetFile', n8nVersion: 1, fields: [{ name: 'operation', label: 'Operation', type: 'select', options: ['read', 'write'] }]
+  },
+  {
+    type: 'executeCommand', name: 'Execute Command', icon: Command, category: 'dev',
+    color: 'text-slate-300', bg: 'bg-slate-800', border: 'border-slate-500', desc: 'Run Shell',
+    n8nType: 'n8n-nodes-base.executeCommand', n8nVersion: 1, fields: [{ name: 'command', label: 'Command', type: 'textarea' }]
+  },
+  {
+    type: 'itemLists', name: 'Item Lists', icon: ListChecks, category: 'core',
+    color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/50', desc: 'Split/Merge Items',
+    n8nType: 'n8n-nodes-base.itemLists', n8nVersion: 1, fields: [{ name: 'operation', label: 'Operation', type: 'select', options: ['split', 'removeDuplicates', 'sort'] }]
+  },
+  {
+    type: 'compression', name: 'Compression', icon: Archive, category: 'core',
+    color: 'text-slate-400', bg: 'bg-slate-700', border: 'border-slate-500', desc: 'Zip/Unzip',
+    n8nType: 'n8n-nodes-base.compression', n8nVersion: 1, fields: [{ name: 'operation', label: 'Operation', type: 'select', options: ['compress', 'decompress'] }]
   }
 ];

@@ -16,70 +16,54 @@ export const ConnectivityGuide: React.FC<ConnectivityGuideProps> = ({ isOpen, on
 
     const content = {
         whatsapp: {
-            title: 'WhatsApp Integration',
+            title: 'Integración WhatsApp',
             methods: [
                 {
-                    name: isEs ? 'Método Oficial (Meta Cloud API)' : 'Official Method (Meta Cloud API)',
-                    rec: isEs ? 'Recomendado para Negocios' : 'Recommended for Business',
+                    name: 'Método Oficial (Meta Cloud API)',
+                    rec: 'Recomendado para Negocios',
                     color: 'emerald',
                     icon: CheckCircle,
-                    pros: isEs ? ['Riesgo de Ban: 0%', '1,000 conversaciones gratis/mes (Servicio)', 'Estabilidad Total'] : ['Ban Risk: 0%', '1,000 free service convos/mo', 'Total Stability'],
-                    cons: isEs ? ['Requiere verificación de negocio', 'Costo por mensajes de marketing'] : ['Requires business verification', 'Cost for marketing messages'],
-                    steps: isEs ? [
+                    pros: ['Riesgo de Ban: 0%', '1,000 conversaciones gratis/mes', 'Estabilidad Total', 'Soporte Oficial'],
+                    cons: ['Requiere verificación de negocio (Meta)', 'Costo por mensajes de marketing', 'Configuración más compleja'],
+                    steps: [
                         '1. Ve a developers.facebook.com y crea una App.',
-                        '2. Añade el producto "WhatsApp".',
-                        '3. Obtén tu Token y Phone ID.',
+                        '2. Añade el producto "WhatsApp" a tu app.',
+                        '3. Obtén tu Token de Acceso y Phone ID.',
                         '4. Pégalos en las credenciales de n8n.'
-                    ] : [
-                        '1. Go to developers.facebook.com and create an App.',
-                        '2. Add "WhatsApp" product.',
-                        '3. Get your Token and Phone ID.',
-                        '4. Paste them into n8n credentials.'
                     ]
                 },
                 {
-                    name: isEs ? 'Método "Bridge" (WAHA / WhiteCloud)' : '"Bridge" Method (WAHA / WhiteCloud)',
-                    rec: isEs ? 'Uso Personal / Hobby' : 'Personal Use / Hobby',
+                    name: 'Método "Bridge" (WAHA / WhiteCloud)',
+                    rec: 'Uso Personal / Hacks',
                     color: 'amber',
                     icon: AlertTriangle,
-                    pros: isEs ? ['Usa tu número actual', 'Gratis (Self-hosted)', 'Funciona con grupos'] : ['Uses current number', 'Free (Self-hosted)', 'Works with groups'],
-                    cons: isEs ? ['Riesgo de Ban ALTO si abusas', 'Requiere teléfono encendido o Docker', 'No oficial'] : ['HIGH Ban risk if abused', 'Requires phone on or Docker', 'Unofficial'],
-                    steps: isEs ? [
+                    pros: ['Usa tu número actual de teléfono', 'Gratis (si lo alojas tú mismo)', 'Funciona con grupos existente'],
+                    cons: ['Riesgo de Ban ALTO si abusas', 'Requiere teléfono encendido o Docker 24/7', 'No oficial (inestable a veces)'],
+                    steps: [
                         '1. Instala WAHA (Docker) o usa un servicio bridge.',
                         '2. Escanea el QR como "Dispositivo Vinculado".',
-                        '3. Usa el nodo "HTTP Request" en n8n apuntando a tu API local.',
+                        '3. Usa el nodo "HTTP Request" apuntando a tu API local.',
                         '4. NO uses el nodo oficial de WhatsApp.'
-                    ] : [
-                        '1. Install WAHA (Docker) or use a bridge service.',
-                        '2. Scan QR as "Linked Device".',
-                        '3. Use "HTTP Request" node in n8n targeting your local API.',
-                        '4. DO NOT use the official WhatsApp node.'
                     ]
                 }
             ]
         },
         telegram: {
-            title: 'Telegram Integration',
+            title: 'Integración Telegram',
             methods: [
                 {
-                    name: isEs ? 'Telegram Bot API' : 'Telegram Bot API',
-                    rec: isEs ? 'Mejor Opción General (Plan A)' : 'Best Overall Option (Plan A)',
+                    name: 'Telegram Bot API',
+                    rec: 'Mejor Opción General',
                     color: 'sky',
                     icon: Send,
-                    pros: isEs ? ['100% Gratis e Ilimitado', 'Cero riesgo de Ban', 'Configuración en 30 segundos'] : ['100% Free & Unlimited', 'Zero Ban Risk', 'Setup in 30 seconds'],
-                    cons: isEs ? ['No es WhatsApp (Menos usuarios comunes)'] : ['Not WhatsApp (Fewer common users)'],
-                    steps: isEs ? [
+                    pros: ['100% Gratis e Ilimitado', 'Cero riesgo de Ban', 'Configuración en 30 segundos', 'Muy rápido'],
+                    cons: ['No es WhatsApp (Menos usuarios comunes)'],
+                    steps: [
                         '1. Abre Telegram y busca @BotFather.',
-                        '2. Envía /newbot y ponle nombre.',
+                        '2. Envía /newbot y sigue las instrucciones.',
                         '3. Copia el TOKEN que te da.',
-                        '4. Busca @userinfobot para saber tu ID numérico.',
+                        '4. (Opcional) Busca @userinfobot para saber tu ID.',
                         '5. ¡Listo! Úsalos en el nodo Telegram.'
-                    ] : [
-                        '1. Open Telegram and search @BotFather.',
-                        '2. Send /newbot and name it.',
-                        '3. Copy the TOKEN provided.',
-                        '4. Search @userinfobot to get your numeric ID.',
-                        '5. Done! Use them in the Telegram node.'
                     ]
                 }
             ]
@@ -123,11 +107,9 @@ export const ConnectivityGuide: React.FC<ConnectivityGuideProps> = ({ isOpen, on
                     <div className="p-8 overflow-y-auto custom-scrollbar">
                         {/* Header */}
                         <div className="mb-8">
-                            <h1 className="text-3xl font-bold text-white mb-2">{isEs ? (activeTab === 'whatsapp' ? 'Integración WhatsApp' : 'Integración Telegram') : content[activeTab].title}</h1>
+                            <h1 className="text-3xl font-bold text-white mb-2">{content[activeTab].title}</h1>
                             <p className="text-slate-400 text-lg">
-                                {isEs
-                                    ? (activeTab === 'whatsapp' ? 'El estándar de oro, pero con reglas.' : 'La alternativa robusta, libre y segura.')
-                                    : (activeTab === 'whatsapp' ? 'The gold standard, but with rules.' : 'The robust, free, and secure alternative.')}
+                                {activeTab === 'whatsapp' ? 'El estándar de oro, pero con reglas.' : 'La alternativa robusta, libre y segura.'}
                             </p>
                         </div>
 
@@ -176,7 +158,7 @@ export const ConnectivityGuide: React.FC<ConnectivityGuideProps> = ({ isOpen, on
 
                                         {/* Setup Steps */}
                                         <div>
-                                            <h4 className="text-xs font-bold text-slate-500 uppercase mb-3 tracking-wider">{isEs ? 'Cómo Conectar' : 'How to Connect'}</h4>
+                                            <h4 className="text-xs font-bold text-slate-500 uppercase mb-3 tracking-wider">Cómo Conectar</h4>
                                             <div className="bg-black/40 rounded-xl p-4 border border-white/5 space-y-3">
                                                 {method.steps.map((step, i) => (
                                                     <div key={i} className="flex gap-3 text-sm text-slate-300">

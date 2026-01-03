@@ -32,7 +32,7 @@ export const JsonViewModal: React.FC<JsonViewModalProps> = ({ isOpen, onClose, t
                             <span className="p-1 bg-[#EA4B71] rounded text-white"><Share2 size={16} /></span>
                             {t('exportFlow')}
                         </h3>
-                        <p className="text-xs text-slate-400 mt-1">Ready for n8n Executive Engine</p>
+                        <p className="text-xs text-slate-400 mt-1">Listo para el Motor Ejecutivo n8n</p>
                     </div>
                     <button onClick={onClose} className="text-slate-400 hover:text-white p-2 bg-white/5 rounded-full"><X size={20} /></button>
                 </div>
@@ -57,7 +57,7 @@ export const JsonViewModal: React.FC<JsonViewModalProps> = ({ isOpen, onClose, t
                         <HelpCircle size={12} /> {t('connectGuide') || (lang === 'es-la' ? 'Guía de Conexión' : 'Connect Guide')}
                     </button>
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-[#EA4B71]/10 border border-[#EA4B71]/30 rounded text-[#EA4B71] text-xs font-bold whitespace-nowrap">
-                        <Check size={12} /> n8n Compatible
+                        <Check size={12} /> Compatible con n8n
                     </div>
                 </div>
 
@@ -75,7 +75,7 @@ export const JsonViewModal: React.FC<JsonViewModalProps> = ({ isOpen, onClose, t
                 </div>
 
                 <div className="p-5 bg-[#1A1A1A] flex justify-between items-center border-t border-white/10 shrink-0">
-                    <span className="text-xs text-slate-500">Paste this JSON directly into n8n (Ctrl+V)</span>
+                    <span className="text-xs text-slate-500">Pega este JSON directamente en n8n (Ctrl+V)</span>
                     <div className="flex gap-3">
                         <button onClick={onClose} className="px-5 py-2.5 text-sm font-medium text-slate-400 hover:text-white transition-colors">{t('close')}</button>
                         <button onClick={copyToClipboard} className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2">
