@@ -13,21 +13,17 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-        this.state = {
-            hasError: false,
-            error: null,
-            errorInfo: null
-        };
-    }
+    state: State = {
+        hasError: false,
+        error: null,
+        errorInfo: null
+    };
 
     static getDerivedStateFromError(error: Error): Partial<State> {
         return { hasError: true };
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        // Log error to console (in production, send to error tracking service like Sentry)
         console.error('🚨 Error Boundary Caught:', error, errorInfo);
 
         this.setState({
@@ -54,23 +50,19 @@ export class ErrorBoundary extends Component<Props, State> {
 
     render() {
         if (this.state.hasError) {
-            // Custom fallback UI if provided
             if (this.props.fallbackUI) {
                 return this.props.fallbackUI;
             }
 
-            // Default error UI
             return (
                 <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center p-4">
                     <div className="max-w-2xl w-full bg-[#11141a] border border-red-500/20 rounded-xl p-8 shadow-2xl">
-                        {/* Icon */}
                         <div className="flex justify-center mb-6">
                             <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center">
                                 <AlertTriangle className="w-10 h-10 text-red-500" />
                             </div>
                         </div>
 
-                        {/* Title */}
                         <h1 className="text-2xl font-bold text-white text-center mb-2">
                             ¡Oops! Algo salió mal
                         </h1>
@@ -78,7 +70,6 @@ export class ErrorBoundary extends Component<Props, State> {
                             La aplicación encontró un error inesperado. No te preocupes, tus datos están seguros.
                         </p>
 
-                        {/* Error Details (Development Only) */}
                         {process.env.NODE_ENV === 'development' && this.state.error && (
                             <div className="mb-6 bg-slate-900/50 border border-slate-700 rounded-lg p-4 max-h-60 overflow-auto">
                                 <p className="text-xs font-mono text-red-400 mb-2">
@@ -92,7 +83,6 @@ export class ErrorBoundary extends Component<Props, State> {
                             </div>
                         )}
 
-                        {/* Action Buttons */}
                         <div className="flex flex-col sm:flex-row gap-3 justify-center">
                             <button
                                 onClick={this.handleReload}
@@ -120,7 +110,6 @@ export class ErrorBoundary extends Component<Props, State> {
                             )}
                         </div>
 
-                        {/* Help Text */}
                         <p className="text-xs text-slate-500 text-center mt-6">
                             Si el problema persiste, intenta limpiar el caché del navegador o contacta con soporte.
                         </p>
