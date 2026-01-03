@@ -1,19 +1,19 @@
-import { Component, ReactNode, ErrorInfo } from 'react';
+import React, { ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
-interface Props {
+interface ErrorBoundaryProps {
     children: ReactNode;
     fallbackUI?: ReactNode;
 }
 
-interface State {
+interface ErrorBoundaryState {
     hasError: boolean;
     error: Error | null;
     errorInfo: ErrorInfo | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
-    constructor(props: Props) {
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+    constructor(props: ErrorBoundaryProps) {
         super(props);
         this.state = {
             hasError: false,
@@ -22,7 +22,7 @@ export class ErrorBoundary extends Component<Props, State> {
         };
     }
 
-    static getDerivedStateFromError(_error: Error): Partial<State> {
+    static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
         return { hasError: true };
     }
 
