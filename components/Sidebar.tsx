@@ -20,7 +20,7 @@ interface SidebarProps {
   t: (key: string) => string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({
+export const Sidebar = React.memo<SidebarProps>(({
   isMobileMenuOpen,
   setIsMobileMenuOpen,
   mainPrompt,
@@ -139,4 +139,4 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
     </aside>
   );
-};
+});

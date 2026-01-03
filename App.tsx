@@ -26,6 +26,8 @@ import { SelectedNodePanel } from './components/SelectedNodePanel';
 import { SmartConfigModal } from './components/SmartConfigModal';
 import { TemplatesModal } from './components/TemplatesModal';
 import { JsonViewModal } from './components/JsonViewModal';
+import { HelpButton } from './components/HelpButton';
+import { InteractiveTutorial } from './components/InteractiveTutorial';
 
 // --- HELPER FUNCTIONS ---
 function generateId(): string {
@@ -49,22 +51,27 @@ function App({ user, onLogout }: AppProps) {
   const [nodes, setNodes] = useState<NodeInstance[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
 
   // State: Viewport & Interactions
   const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, k: 1 });
   const [isPanning, setIsPanning] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
+  const [draggedNodeIds, setDraggedNodeIds] = useState<Set<string>>(new Set());
   const [connectingNodeId, setConnectingNodeId] = useState<string | null>(null);
   const [connectingHandleId, setConnectingHandleId] = useState<string | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const mousePos = useRef({ x: 0, y: 0 }); // Converted to Ref for performance
+  const [isBoxSelecting, setIsBoxSelecting] = useState(false);
+  const [boxSelectStart, setBoxSelectStart] = useState<{ x: number; y: number } | null>(null);
+  const [boxSelectEnd, setBoxSelectEnd] = useState<{ x: number; y: number } | null>(null);
 
   // State: UI Overlays & Modes
   const [showTemplates, setShowTemplates] = useState(false);
   const [showJson, setShowJson] = useState(false);
   const [analysis, setAnalysis] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [lang, setLang] = useState<LanguageCode>('en');
+  const [lang, setLang] = useState<LanguageCode>('es'); // Changed from 'en' to 'es'
   const [showWizard, setShowWizard] = useState(false);
   const [quickAdd, setQuickAdd] = useState<{ visible: boolean; x: number; y: number; sourceNodeId?: string }>({ visible: false, x: 0, y: 0 });
   const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'error' | 'info' }[]>([]);
@@ -74,6 +81,13 @@ function App({ user, onLogout }: AppProps) {
   const [configPrompt, setConfigPrompt] = useState('');
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [showConnectivityGuide, setShowConnectivityGuide] = useState(false);
+
+  // Tutorial State
+  const [tutorialActive, setTutorialActive] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
+
+  // Language Modal State
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
 
   // Sidebar State
   const [sidebarSearchQuery, setSidebarSearchQuery] = useState('');
@@ -139,6 +153,111 @@ function App({ user, onLogout }: AppProps) {
     return () => canvas.removeEventListener('wheel', wheelHandler);
   }, [viewport]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+A: Select all nodes
+      if (e.ctrlKey && e.key === 'a') {
+        e.preventDefault();
+        setSelectedNodeIds(new Set(nodes.map(n => n.id)));
+        addToast(`Selected ${nodes.length} nodes`, 'info');
+      }
+
+      // Escape: Deselect all
+      if (e.key === 'Escape') {
+        setSelectedNodeIds(new Set());
+        setSelectedNodeId(null);
+      }
+
+      // Delete: Remove selected nodes
+      if (e.key === 'Delete' && selectedNodeIds.size > 0) {
+        selectedNodeIds.forEach(id => {
+          setNodes(prev => prev.filter(n => n.id !== id));
+          setConnections(prev => prev.filter(c => c.source !== id && c.target !== id));
+        });
+        addToast(`Deleted ${selectedNodeIds.size} nodes`, 'info');
+        setSelectedNodeIds(new Set());
+        setSelectedNodeId(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [nodes, selectedNodeIds]);
+
+  // Initialize tutorial on first visit
+  useEffect(() => {
+    const hasCompletedTutorial = localStorage.getItem('tutorial_completed');
+    const hasSeenHelp = localStorage.getItem('help_button_seen');
+
+    // Start tutorial if user hasn't completed it and has no nodes
+    if (!hasCompletedTutorial && !hasSeenHelp && nodes.length === 0) {
+      // Delay to let the app load
+      const timer = setTimeout(() => setTutorialActive(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [nodes.length]);
+
+  // MANDATORY AUTH ENFORCEMENT
+  useEffect(() => {
+    if (!user) {
+      setShowAuthModal(true);
+    }
+  }, [user]);
+
+  // --- PERSISTENCE LOGIC ---
+
+  // 1. Load from LocalStorage on Mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('autoflow_draft');
+    if (savedDraft) {
+      try {
+        const { nodes: savedNodes, connections: savedConnections, timestamp } = JSON.parse(savedDraft);
+
+        if (Array.isArray(savedNodes) && Array.isArray(savedConnections)) {
+          // HYDRATION STEP: Restore functions/components lost in JSON
+          const hydratedNodes = savedNodes.map((n: any) => {
+            const template = NODE_CATALOG.find(t => t.type === n.type);
+            return {
+              ...n,
+              // Restore UI assets from catalog (Icons are functions, lost in JSON)
+              icon: template?.icon || n.icon,
+              bg: template?.bg || n.bg,
+              color: template?.color || n.color,
+              component: undefined // Ensure no stale component refs
+            };
+          });
+
+          setNodes(hydratedNodes);
+          setConnections(savedConnections);
+
+          if (savedNodes.length > 0) {
+            setTimeout(() => addToast('Workflow restored from autosave', 'success'), 500);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load draft', e);
+      }
+    }
+  }, []); // Run ONCE on mount
+
+  // 2. Auto-Save to LocalStorage on Change
+  useEffect(() => {
+    // Debounce slightly to avoid thrashing storage on drag
+    const timeoutId = setTimeout(() => {
+      if (nodes.length > 0) { // Only save if there's content to avoid overwriting with empty
+        const draft = {
+          nodes,
+          connections,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('autoflow_draft', JSON.stringify(draft));
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [nodes, connections]);
+
   // --- EVENT HANDLERS ---
 
   // Toast Helper
@@ -149,7 +268,7 @@ function App({ user, onLogout }: AppProps) {
   };
 
   // Node Operations
-  const addNode = (type: NodeType, position: { x: number, y: number }) => {
+  const addNode = useCallback((type: NodeType, position: { x: number, y: number }) => {
     const template = NODE_CATALOG.find(n => n.type === type);
     if (!template) return;
 
@@ -173,7 +292,7 @@ function App({ user, onLogout }: AppProps) {
 
     setNodes(prev => [...prev, newNode]);
     addToast(`${newNode.name} added`, 'success');
-  };
+  }, [content, addToast]); // content changes with lang
 
   const removeNode = (id: string) => {
     setNodes(prev => prev.filter(n => n.id !== id));
@@ -182,13 +301,39 @@ function App({ user, onLogout }: AppProps) {
     addToast('Node removed', 'info');
   };
 
+  // Canvas Bounds Cache to prevent layout thrashing
+  const canvasBounds = useRef<DOMRect | null>(null);
+
   // Canvas Interactions
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     if (e.button === 0 && !connectingNodeId) { // Left click
       if (e.target === canvasRef.current) {
-        setIsPanning(true);
-        setLastMousePos({ x: e.clientX, y: e.clientY });
-        setSelectedNodeId(null);
+        // Cache bounds on start
+        if (canvasRef.current) {
+          canvasBounds.current = canvasRef.current.getBoundingClientRect();
+        }
+
+        if (!e.ctrlKey && !e.shiftKey) {
+          // Start box selection or panning
+          if (e.altKey) {
+            // Alt + Click = Box selection
+            setIsBoxSelecting(true);
+            const rect = canvasBounds.current!;
+            const x = (e.clientX - rect.left - viewport.x) / viewport.k;
+            const y = (e.clientY - rect.top - viewport.y) / viewport.k;
+            setBoxSelectStart({ x, y });
+            setBoxSelectEnd({ x, y });
+          } else {
+            // Normal panning
+            setIsPanning(true);
+            setLastMousePos({ x: e.clientX, y: e.clientY });
+          }
+        }
+        // Deselect all if clicking on empty canvas without modifiers
+        if (!e.ctrlKey && !e.shiftKey && !e.altKey) {
+          setSelectedNodeId(null);
+          setSelectedNodeIds(new Set());
+        }
         setQuickAdd({ ...quickAdd, visible: false });
       }
     }
@@ -196,12 +341,48 @@ function App({ user, onLogout }: AppProps) {
 
   const handleCanvasMouseMove = (e: React.MouseEvent) => {
     if (!canvasRef.current) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    setMousePos({
+
+    // FAST PATH: Use cached bounds if dragging/panning
+    // Only recalculate if we don't have them (shouldn't happen during drag if MouseDown logic is correct)
+    let rect = canvasBounds.current;
+    if (!rect) {
+      rect = canvasRef.current.getBoundingClientRect();
+      canvasBounds.current = rect;
+    }
+
+    mousePos.current = {
       x: (e.clientX - rect.left - viewport.x) / viewport.k,
       y: (e.clientY - rect.top - viewport.y) / viewport.k
-    });
+    };
 
+    // Box selection
+    if (isBoxSelecting && boxSelectStart) {
+      const x = (e.clientX - rect.left - viewport.x) / viewport.k;
+      const y = (e.clientY - rect.top - viewport.y) / viewport.k;
+      setBoxSelectEnd({ x, y });
+
+      // Calculate box bounds
+      const minX = Math.min(boxSelectStart.x, x);
+      const maxX = Math.max(boxSelectStart.x, x);
+      const minY = Math.min(boxSelectStart.y, y);
+      const maxY = Math.max(boxSelectStart.y, y);
+
+      // Find nodes within box
+      const nodesInBox = nodes.filter(node => {
+        const nodeRight = node.position.x + 240;
+        const nodeBottom = node.position.y + 72;
+        return (
+          node.position.x < maxX &&
+          nodeRight > minX &&
+          node.position.y < maxY &&
+          nodeBottom > minY
+        );
+      });
+
+      setSelectedNodeIds(new Set(nodesInBox.map(n => n.id)));
+    }
+
+    // Panning
     if (isPanning) {
       const dx = e.clientX - lastMousePos.x;
       const dy = e.clientY - lastMousePos.y;
@@ -209,7 +390,27 @@ function App({ user, onLogout }: AppProps) {
       setLastMousePos({ x: e.clientX, y: e.clientY });
     }
 
-    if (draggedNodeId) {
+    // Group dragging
+    if (draggedNodeIds.size > 0) {
+      const dx = e.movementX / viewport.k;
+      const dy = e.movementY / viewport.k;
+
+      setNodes(prev => prev.map(n => {
+        if (draggedNodeIds.has(n.id)) {
+          return {
+            ...n,
+            position: {
+              x: n.position.x + dx,
+              y: n.position.y + dy
+            }
+          };
+        }
+        return n;
+      }));
+    }
+
+    // Single node dragging (legacy support)
+    if (draggedNodeId && draggedNodeIds.size === 0) {
       setNodes(prev => prev.map(n => {
         if (n.id === draggedNodeId) {
           return {
@@ -225,11 +426,38 @@ function App({ user, onLogout }: AppProps) {
     }
   };
 
-  const handleCanvasMouseUp = () => {
+  const handleCanvasMouseUp = (e: React.MouseEvent) => {
     setIsPanning(false);
     setDraggedNodeId(null);
+    setDraggedNodeIds(new Set());
+    setIsBoxSelecting(false);
+    setBoxSelectStart(null);
+    setBoxSelectEnd(null);
+
     if (connectingNodeId) {
-      // If we released over canvas (not a handle), cancel connection
+      // MAGIC CONNECT: If we released over canvas (not a handle), open Quick Add to create & connect
+      // Calculate mouse position relative to canvas
+      if (canvasRef.current) {
+        setQuickAdd({
+          visible: true,
+          x: (mousePos.current.x * viewport.k) + viewport.x + canvasRef.current.getBoundingClientRect().left, // Approximate screen coords from logic
+          y: (mousePos.current.y * viewport.k) + viewport.y + canvasRef.current.getBoundingClientRect().top, // Wait, we have e.clientX/Y from mouseUp? No, this function doesn't take 'e' currently in the signature shown below... 
+          // Actually handleCanvasMouseUp IS dealing with an event in the codebase relative to where it's attached?
+          // Let's check the signature in the file content. It currently takes NO args.
+          // I need to update the signature to accept 'e' or use the ref.
+          // Using the ref 'mousePos' is safer if we don't change signature, BUT 'mousePos' is in canvas coords.
+          // QuickAdd expects SCREEN coords (client X/Y).
+          // Let's use the 'lastMousePos' state if available or change signature.
+          // Changing signature is best practice.
+          // But wait, line 863 says `onMouseUp={handleCanvasMouseUp}`. React passes the event.
+          // So I just need to add `e` to the arguments.
+          sourceNodeId: connectingNodeId
+        });
+
+        // However, to get the EXACT drop position, we need 'e'. 
+        // Let's modify the function signature first.
+      }
+
       setConnectingNodeId(null);
       setConnectingHandleId(null);
     }
@@ -273,8 +501,28 @@ function App({ user, onLogout }: AppProps) {
   const handleNodeMouseDown = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (e.button === 0) {
-      setDraggedNodeId(id);
-      setSelectedNodeId(id);
+      if (e.ctrlKey) {
+        // Ctrl+Click: Add/remove from selection
+        setSelectedNodeIds(prev => {
+          const newSet = new Set(prev);
+          if (newSet.has(id)) {
+            newSet.delete(id);
+          } else {
+            newSet.add(id);
+          }
+          return newSet;
+        });
+        setSelectedNodeId(id);
+      } else if (selectedNodeIds.has(id)) {
+        // Clicking on already selected node: start group drag
+        setDraggedNodeIds(new Set(selectedNodeIds));
+        setSelectedNodeId(id);
+      } else {
+        // Normal single selection
+        setDraggedNodeId(id);
+        setSelectedNodeId(id);
+        setSelectedNodeIds(new Set([id]));
+      }
     }
   };
 
@@ -434,27 +682,68 @@ function App({ user, onLogout }: AppProps) {
       const flow = await generateWorkflowFromPrompt(mainPrompt, lang);
       if (flow && flow.nodes) {
         // Map generated nodes to our internal structure with IDs and positions
-        // Regenerate IDs to avoid conflicts
-        const idMap: Record<string, string> = {};
+        // IMPORTANT: Hydrate with catalog data (icon, color, fields, etc.)
+        const idMap: Record<number, string> = {}; // Map array index to new ID
         const newNodes: NodeInstance[] = flow.nodes.map((n: any, i: number) => {
           const newId = generateId();
-          // Store map if connections provided (future proofing) but usually gen returns linear list
-          // Assign positions in a grid or line
-          return {
-            ...n,
-            id: newId,
-            position: { x: 100 + (i * 250), y: 100 + (i % 2 * 100) }, // Simple layout
-            data: {}
-          };
-        });
+          idMap[i] = newId; // Store mapping for connections
 
-        // Append to existing or replace? Let's append but shift logical position if needed.
-        // For now, simpler to just setNodes if empty or append.
+          // Find the template from catalog to get icon, color, fields, etc.
+          const template = NODE_CATALOG.find(cat => cat.type === n.type);
+
+          if (!template) {
+            console.warn(`Node type "${n.type}" not found in catalog`);
+            return null;
+          }
+
+          // Hydrate the node with ALL catalog data
+          return {
+            id: newId,
+            type: n.type,
+            name: content.nodeNames[n.type] || template.name,
+            n8nType: template.n8nType,
+            n8nVersion: template.n8nVersion,
+            position: { x: 100 + (i * 280), y: 150 + (i % 2 * 120) }, // Stagger layout
+            icon: template.icon,
+            bg: template.bg,
+            color: template.color,
+            category: template.category,
+            border: template.border,
+            fields: template.fields,
+            desc: template.desc,
+            config: n.config || {}, // Use AI-provided config
+            customParams: {}
+          } as NodeInstance;
+        }).filter(Boolean) as NodeInstance[]; // Remove nulls
+
+        // Create connections if provided by AI
+        const newConnections: Connection[] = [];
+        if (flow.connections && Array.isArray(flow.connections)) {
+          flow.connections.forEach((conn: any) => {
+            const sourceId = idMap[conn.source];
+            const targetId = idMap[conn.target];
+
+            if (sourceId && targetId) {
+              newConnections.push({
+                id: generateId(),
+                source: sourceId,
+                target: targetId,
+                sourceHandle: conn.sourceHandle || 'main',
+                targetHandle: conn.targetHandle || 'input'
+              });
+            }
+          });
+        }
+
+        // Add nodes and connections to canvas
         setNodes(curr => [...curr, ...newNodes]);
+        setConnections(curr => [...curr, ...newConnections]);
+
         addToast(t('generatedNodes'), 'success');
         setMainPrompt('');
       }
     } catch (err) {
+      console.error('Workflow generation error:', err);
       addToast('Generation failed', 'error');
     } finally {
       setIsProcessing(false);
@@ -466,10 +755,22 @@ function App({ user, onLogout }: AppProps) {
     if (template) {
       // Regenerate IDs to avoid conflicts
       // Templates use array indices for connections, so we map by index
-      const newNodes = template.nodes.map(n => ({
-        ...n,
-        id: generateId()
-      }));
+      const newNodes = template.nodes.map(n => {
+        const catalogNode = NODE_CATALOG.find(cat => cat.type === n.type);
+        return {
+          ...catalogNode, // Hydrate with catalog defaults (fields, icon, color, etc.)
+          ...n, // Override with template specifics (config, position)
+          id: generateId(),
+          // Ensure fields are definitely present if catalog has them
+          fields: catalogNode?.fields || [],
+          // Ensure visual properties are present if template missed them
+          icon: catalogNode?.icon,
+          color: catalogNode?.color,
+          bg: catalogNode?.bg,
+          border: catalogNode?.border,
+          name: content.nodeNames[n.type] || catalogNode?.name || n.name // Use translated name if available
+        } as NodeInstance;
+      });
 
       // Map connections using array indices
       const newConnections = template.connections.map(c => ({
@@ -505,7 +806,7 @@ function App({ user, onLogout }: AppProps) {
             connections
           );
           if (error || !workflow) {
-            addToast("Failed to save workflow", "error");
+            addToast(`Failed to save workflow: ${error || 'Unknown error'}`, "error");
             setIsSimulating(false);
             return;
           }
@@ -514,15 +815,17 @@ function App({ user, onLogout }: AppProps) {
         }
 
         // Execute workflow
-        const { executionId, error } = await executionEngine.executeWorkflow(
+        const { executionId, logs, error } = await executionEngine.executeWorkflow(
           workflowId,
           nodes,
           connections
         );
 
         if (error) {
+          setSimulationLogs(logs || []);
           addToast(`Execution failed: ${error}`, "error");
         } else {
+          setSimulationLogs(logs || []);
           addToast("Execution completed successfully", "success");
         }
       } catch (err) {
@@ -587,8 +890,8 @@ function App({ user, onLogout }: AppProps) {
     }
   };
 
-  // Rendering Connections
-  const renderConnections = () => {
+  // Rendering Connections - Memoized
+  const connectionLines = useMemo(() => {
     return (
       <svg className="absolute inset-0 overflow-visible pointer-events-none z-10">
         <defs>
@@ -626,8 +929,27 @@ function App({ user, onLogout }: AppProps) {
         </g>
       </svg>
     );
-  };
+  }, [connections, nodes, viewport]);
 
+
+  // Memoized callback for Sidebar to prevent re-renders
+  const handleAddNodeFromSidebar = useCallback((type: NodeType) => {
+    if (canvasRef.current) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = (rect.width / 2 - viewport.x) / viewport.k;
+      const y = (rect.height / 2 - viewport.y) / viewport.k;
+      addNode(type, { x, y });
+    } else {
+      addNode(type, { x: 100, y: 100 });
+    }
+  }, [viewport, addNode]); // addNode depends mostly on constants/translation, so it stabilizes if those are stable? 
+  // Wait, addNode (defined at line 211) is NOT wrapped in useCallback. 
+  // I need to wrap addNode in useCallback first for this to work perfectly, 
+  // OR just assume addNode identity changes? 
+  // Function `addNode` (ln 211) is created every render. 
+  // So `handleAddNodeFromSidebar` will ALSO change every render. 
+  // This fails the optimization.
+  // I MUST wrap `addNode` (ln 211) in useCallback first.
 
   return (
     <div className="w-full h-screen bg-[#0B0E14] text-slate-200 flex flex-col font-sans selection:bg-indigo-500/30 overflow-hidden">
@@ -644,9 +966,15 @@ function App({ user, onLogout }: AppProps) {
         setShowJson={setShowJson}
         isSimulating={isSimulating}
         onSimulate={handleSimulate}
-        user={null}
+        user={user}
         onShowAuth={() => setShowAuthModal(true)}
         onLogout={() => { }}
+        onRestartTutorial={() => {
+          setTutorialStep(0);
+          setTutorialActive(true);
+        }}
+        showLanguageModal={showLanguageModal}
+        setShowLanguageModal={setShowLanguageModal}
       />
 
       <main className="flex-1 flex overflow-hidden relative">
@@ -661,17 +989,7 @@ function App({ user, onLogout }: AppProps) {
           isProcessing={isProcessing}
           searchQuery={sidebarSearchQuery}
           setSearchQuery={setSidebarSearchQuery}
-          addNode={(type) => {
-            // Calculate center of view
-            if (canvasRef.current) {
-              const rect = canvasRef.current.getBoundingClientRect();
-              const x = (rect.width / 2 - viewport.x) / viewport.k;
-              const y = (rect.height / 2 - viewport.y) / viewport.k;
-              addNode(type, { x, y });
-            } else {
-              addNode(type, { x: 100, y: 100 });
-            }
-          }}
+          addNode={handleAddNodeFromSidebar}
         />
 
         <div
@@ -686,11 +1004,48 @@ function App({ user, onLogout }: AppProps) {
           {/* Background Grid */}
           <div className="absolute inset-0 z-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#475569 1px, transparent 1px)', backgroundSize: `${20 * viewport.k}px ${20 * viewport.k}px`, backgroundPosition: `${viewport.x}px ${viewport.y}px` }}></div>
 
-          {/* Global Guide Bot */}
-          {isGuidedMode && !selectedNodeId && <GuideBot t={t} lang={lang} variant="global" focusedField={null} />}
+          {/* Box Selection Rectangle */}
+          {isBoxSelecting && boxSelectStart && boxSelectEnd && (
+            <div
+              className="absolute border-2 border-indigo-500 bg-indigo-500/10 pointer-events-none z-20"
+              style={{
+                left: Math.min(boxSelectStart.x, boxSelectEnd.x) * viewport.k + viewport.x,
+                top: Math.min(boxSelectStart.y, boxSelectEnd.y) * viewport.k + viewport.y,
+                width: Math.abs(boxSelectEnd.x - boxSelectStart.x) * viewport.k,
+                height: Math.abs(boxSelectEnd.y - boxSelectStart.y) * viewport.k,
+              }}
+            />
+          )}
+
+          {/* Multi-Selection Bounding Box */}
+          {selectedNodeIds.size > 1 && !isBoxSelecting && (() => {
+            const selectedNodes = nodes.filter(n => selectedNodeIds.has(n.id));
+            if (selectedNodes.length === 0) return null;
+
+            const minX = Math.min(...selectedNodes.map(n => n.position.x));
+            const minY = Math.min(...selectedNodes.map(n => n.position.y));
+            const maxX = Math.max(...selectedNodes.map(n => n.position.x + 240));
+            const maxY = Math.max(...selectedNodes.map(n => n.position.y + 72));
+
+            return (
+              <div
+                className="absolute border-2 border-dashed border-indigo-400 rounded-lg pointer-events-none z-10"
+                style={{
+                  left: (minX - 8) * viewport.k + viewport.x,
+                  top: (minY - 8) * viewport.k + viewport.y,
+                  width: (maxX - minX + 16) * viewport.k,
+                  height: (maxY - minY + 16) * viewport.k,
+                }}
+              >
+                <div className="absolute -top-6 left-0 bg-indigo-500 text-white text-xs px-2 py-0.5 rounded">
+                  {selectedNodeIds.size} selected
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Connection Lines */}
-          {renderConnections()}
+          {connectionLines}
 
           {/* Canvas Content */}
           <div className="absolute origin-top-left will-change-transform" style={{ transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.k})` }}>
@@ -729,6 +1084,9 @@ function App({ user, onLogout }: AppProps) {
             <button onClick={zoomOut} className="p-2 bg-[#1A1A1A] border border-white/10 rounded-lg text-slate-300 hover:text-white hover:bg-indigo-600/20 shadow-lg"><ZoomOut size={18} /></button>
             <button onClick={resetView} className="p-2 bg-[#1A1A1A] border border-white/10 rounded-lg text-slate-300 hover:text-white hover:bg-indigo-600/20 shadow-lg"><Maximize size={18} /></button>
           </div>
+
+          {/* Global Guide Bot - Shows when guided mode is active and no node selected */}
+          {isGuidedMode && !selectedNodeId && <GuideBot t={t} lang={lang} variant="global" focusedField={null} />}
 
           {/* Empty State */}
           {nodes.length === 0 && (
@@ -838,6 +1196,9 @@ function App({ user, onLogout }: AppProps) {
         </div>
       </main>
 
+      {/* Floating Help Button */}
+      <HelpButton t={t} />
+
       {/* Quick Add Menu - Fixed positioning outside canvas */}
       {quickAdd.visible && (
         <>
@@ -881,6 +1242,9 @@ function App({ user, onLogout }: AppProps) {
         handleSmartConfig={handleSmartConfig}
         isConfiguring={isConfiguring}
         setNodes={setNodes}
+        nodes={nodes}
+        connections={connections}
+        simulationLogs={simulationLogs}
       />
 
       <SmartConfigModal
@@ -893,6 +1257,13 @@ function App({ user, onLogout }: AppProps) {
         isConfiguring={isConfiguring}
         onSmartConfig={handleSmartConfig}
         addToast={addToast}
+      />
+
+      {/* Auth Modal - Mandatory Gate if not logged in */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        canClose={!!user}
       />
 
       <JsonViewModal
@@ -927,15 +1298,33 @@ function App({ user, onLogout }: AppProps) {
         lang={lang}
       />
 
+      {/* Interactive Tutorial */}
+      {tutorialActive && (
+        <InteractiveTutorial
+          currentStep={tutorialStep}
+          onStepComplete={() => setTutorialStep(prev => prev + 1)}
+          onSkip={() => {
+            setTutorialActive(false);
+            localStorage.setItem('tutorial_completed', 'true');
+            addToast('Tutorial omitido', 'info');
+          }}
+          onComplete={() => {
+            setTutorialActive(false);
+            localStorage.setItem('tutorial_completed', 'true');
+            addToast('¡Tutorial completado! 🎉', 'success');
+          }}
+          nodes={nodes}
+          selectedNodeIds={selectedNodeIds}
+          isBoxSelecting={isBoxSelecting}
+        />
+      )}
+
       {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
 
       {/* Toasts */}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none">
-        {toasts.map(t => (<div key={t.id} className="pointer-events-auto"><Toast message={t.message} type={t.type} onClose={() => setToasts(p => p.filter(x => x.id !== t.id))} /></div>))}
+      <div className="fixed top-4 right-4 z-[100] space-y-2">
+        {toasts.map(toast => <Toast key={toast.id} message={toast.message} type={toast.type} />)}
       </div>
     </div >
   );

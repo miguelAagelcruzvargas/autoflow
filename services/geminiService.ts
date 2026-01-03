@@ -2,8 +2,8 @@ import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { NODE_CATALOG } from "../constants";
 import { LanguageCode } from "../types";
 
-// Using gemini-3-flash-preview for speed and efficiency in generating structured JSON
-const MODEL_NAME = "gemini-3-flash-preview";
+// Using gemini-1.5-flash for speed and efficiency in generating structured JSON
+const MODEL_NAME = "gemini-1.5-flash";
 
 let ai: GoogleGenAI | null = null;
 
@@ -137,7 +137,7 @@ export const analyzeBusinessIdea = async (nodes: any[], lang: LanguageCode) => {
 
   try {
     const response = await client.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: MODEL_NAME,
       contents: "Review this flow.",
       config: {
         systemInstruction,

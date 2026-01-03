@@ -11,8 +11,8 @@ const GEMINI_KEY = import.meta.env.VITE_GOOGLE_API_KEY || '';
 const GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
 
 // Models
-const GEMINI_MODEL = "gemini-1.5-flash"; // Updated to stable 1.5 flash if available, or keep preview
-const GROQ_MODEL = "llama3-70b-8192";
+const GEMINI_MODEL = "gemini-1.5-flash";
+const GROQ_MODEL = "llama-3.3-70b-versatile"; // Updated to current valid model
 
 // --- GEMINI SETUP ---
 let geminiClient: GoogleGenAI | null = null;
@@ -64,18 +64,38 @@ export const generateWorkflowFromPrompt = async (userPrompt: string, lang: Langu
     const systemInstruction = `
     You are an expert n8n Workflow Architect for 'AutoFlow'.
     The user is asking in language: ${lang}.
-    Your goal is to design a valid, logical automation flow.
+    Your goal is to design a valid, logical automation flow with CONNECTIONS.
 
     CATALOG: ${JSON.stringify(catalogInfo)}
 
     Rules:
     1. ONLY use nodes from the provided CATALOG.
-    2. Analyze the user's intent to pick the perfect nodes (e.g. 'schedule' -> 'cron', 'email' -> 'gmail_send').
+    2. Analyze the user's intent to pick the perfect nodes (e.g. 'schedule' -> 'cron', 'email' -> 'gmail_send', 'send telegram' -> 'telegram').
     3. If conditional logic is needed, use 'if' or 'switch'.
-    4. Return a JSON object with a 'nodes' array.
+    4. ALWAYS create connections between nodes to form a complete workflow.
     5. Ensure the flow is linear and logical (Trigger -> Processing -> Action).
+    6. IMPORTANT: Fill the 'config' object with appropriate values based on the user's request.
     
-    Response Format: { "nodes": [ { "type": "node_type", "config": { ... } } ] }
+    Response Format: 
+    {
+      "nodes": [
+        { "type": "node_type", "config": { "field1": "value1", "field2": "value2" } }
+      ],
+      "connections": [
+        { "source": 0, "target": 1 }
+      ]
+    }
+    
+    Example for "Send Telegram message daily at 9am":
+    {
+      "nodes": [
+        { "type": "cron", "config": { "mode": "everyDay" } },
+        { "type": "telegram", "config": { "botToken": "YOUR_BOT_TOKEN", "chatId": "YOUR_CHAT_ID", "text": "Daily reminder at 9am" } }
+      ],
+      "connections": [
+        { "source": 0, "target": 1 }
+      ]
+    }
   `;
 
     if (CURRENT_PROVIDER === 'groq') {
@@ -96,6 +116,17 @@ export const generateWorkflowFromPrompt = async (userPrompt: string, lang: Langu
                             config: { type: Type.OBJECT, properties: {} }
                         },
                         required: ["type"]
+                    }
+                },
+                connections: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            source: { type: Type.NUMBER },
+                            target: { type: Type.NUMBER }
+                        },
+                        required: ["source", "target"]
                     }
                 }
             }

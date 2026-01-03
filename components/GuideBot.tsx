@@ -52,7 +52,7 @@ export const GuideBot: React.FC<GuideBotProps> = ({ node, focusedField, t, lang,
     // Mobile (default): Fixed at the bottom of the panel area (above footer), taking full width with padding.
     // Desktop (md): Absolute positioned to the left of the sidebar with arrow.
     const panelStyles = "absolute bottom-[80px] left-4 right-4 z-[120] md:top-20 md:left-[-270px] md:right-auto md:bottom-auto md:w-64";
-    const globalStyles = "fixed bottom-8 right-8 w-64 md:bottom-12 md:right-12 z-[200]";
+    const globalStyles = "fixed bottom-24 left-[340px] w-64 md:bottom-24 md:left-[340px] z-40"; // Positioned after sidebar (320px) + margin
 
     return (
         <div className={`${variant === 'panel' ? panelStyles : globalStyles} pointer-events-none transition-all duration-300`}>
@@ -106,7 +106,7 @@ animate-[slideUp_0.3s] md:animate-[slideInLeft_0.3s]`}>
                 {variant === 'panel' ? (
                     <div className="hidden md:block absolute top-6 -right-2 w-4 h-4 bg-indigo-600 transform rotate-45 border-t border-r border-indigo-400"></div>
                 ) : (
-                    <div className="absolute bottom-[-6px] right-6 w-4 h-4 bg-indigo-600 transform rotate-45 border-b border-r border-indigo-400"></div>
+                    <div className="absolute bottom-[-6px] left-6 w-4 h-4 bg-indigo-600 transform rotate-45 border-b border-l border-indigo-400"></div>
                 )}
             </div>
 

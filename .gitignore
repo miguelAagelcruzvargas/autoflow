@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local/Private files
+contra.md
+NOTA.HTML
+

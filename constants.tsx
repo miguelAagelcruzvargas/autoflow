@@ -138,9 +138,9 @@ export const WORKFLOW_TEMPLATES = [
     id: 't12', // Telegram Alert (Free/Plan A)
     nodes: [
       { type: 'cron', config: { mode: 'everyHour' }, position: { x: 50, y: 150 } },
-      { type: 'http', config: { url: 'https://google.com', method: 'HEAD' }, position: { x: 300, y: 150 } },
-      { type: 'if', config: { conditions: '{{status}} != 200' }, position: { x: 600, y: 150 } },
-      { type: 'telegram', config: { chatId: 'GET_FROM_@userinfobot', text: '🚨 *Server Alert*\nTarget: Google.com\nStatus: {{status}}' }, position: { x: 900, y: 100 } }
+      { type: 'http', config: { url: 'https://jsonplaceholder.typicode.com/todos/1', method: 'GET' }, position: { x: 300, y: 150 } },
+      { type: 'if', config: { conditions: '{{statusCode}} != 200' }, position: { x: 600, y: 150 } },
+      { type: 'telegram', config: { chatId: 'GET_FROM_@userinfobot', text: '🚨 *Server Alert*\nTarget: API\nStatus: {{statusCode}}' }, position: { x: 900, y: 100 } }
     ],
     connections: [{ source: 0, target: 1 }, { source: 1, target: 2 }, { source: 2, target: 3, sourceHandle: 'true' }]
   }
@@ -276,15 +276,26 @@ export const NODE_CATALOG: NodeTemplate[] = [
     desc: 'Generative Text',
     n8nType: 'n8n-nodes-base.googleGemini',
     n8nVersion: 1,
-    fields: [{ name: 'model', label: 'Model', type: 'select', options: ['gemini-pro', 'gemini-1.5-flash'], help: 'model' }, { name: 'prompt', label: 'Prompt', type: 'textarea', help: 'prompt' }]
+    fields: [
+      { name: 'model', label: 'Model', type: 'select', options: ['gemini-pro', 'gemini-1.5-flash', 'gemini-1.5-pro'], help: 'model' },
+      { name: 'systemMessage', label: 'System Instruction', type: 'textarea', placeholder: 'You are a helpful assistant...', help: 'prompt' },
+      { name: 'prompt', label: 'User Message', type: 'textarea', help: 'prompt' },
+      { name: 'temperature', label: 'Temperature (0-1)', type: 'number', help: 'model' },
+      { name: 'jsonMode', label: 'JSON Output Mode', type: 'toggle', help: 'model' }
+    ]
   },
   {
     type: 'openai', name: 'OpenAI', icon: Bot, category: 'ai',
     color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/50',
     desc: 'GPT Models',
     n8nType: 'n8n-nodes-base.openAi',
-    n8nVersion: 1, // Keep v1 for simpler mapping in this demo (v4 requires messages array construction)
-    fields: [{ name: 'model', label: 'Model', type: 'select', options: ['gpt-4o', 'gpt-3.5-turbo'], help: 'model' }, { name: 'prompt', label: 'Prompt', type: 'textarea', help: 'prompt' }]
+    n8nVersion: 1, // Keep v1 for simpler mapping in this demo
+    fields: [
+      { name: 'model', label: 'Model', type: 'select', options: ['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'], help: 'model' },
+      { name: 'systemMessage', label: 'System Prompt', type: 'textarea', help: 'prompt' },
+      { name: 'prompt', label: 'User Message', type: 'textarea', help: 'prompt' },
+      { name: 'tools', label: 'Enable Tools', type: 'toggle', help: 'model' }
+    ]
   },
   {
     type: 'stability', name: 'Stability AI', icon: Image, category: 'ai',
@@ -300,7 +311,12 @@ export const NODE_CATALOG: NodeTemplate[] = [
     desc: 'AI Chains',
     n8nType: 'n8n-nodes-base.langChain',
     n8nVersion: 1,
-    fields: [{ name: 'chainType', label: 'Chain Type', type: 'text' }]
+    fields: [
+      { name: 'chainType', label: 'Agent Type', type: 'select', options: ['ReAct Agent', 'Conversational Chain', 'Router Agent'] },
+      { name: 'memory', label: 'Enable Memory', type: 'toggle', help: 'model' },
+      { name: 'memoryWindow', label: 'Memory Window (Msgs)', type: 'number', help: 'model' },
+      { name: 'tools', label: 'Allowed Tools', type: 'text', placeholder: 'calculator, google-search', help: 'model' }
+    ]
   },
 
   // --- MESSAGING ---
@@ -310,7 +326,11 @@ export const NODE_CATALOG: NodeTemplate[] = [
     desc: 'Bot API',
     n8nType: 'n8n-nodes-base.telegram',
     n8nVersion: 1,
-    fields: [{ name: 'chatId', label: 'Chat ID', type: 'text', help: 'telegramChatId' }, { name: 'text', label: 'Message', type: 'textarea', help: 'text' }]
+    fields: [
+      { name: 'botToken', label: 'Bot Token', type: 'text', placeholder: '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11', help: 'telegramToken' },
+      { name: 'chatId', label: 'Chat ID', type: 'text', help: 'telegramChatId' },
+      { name: 'text', label: 'Message', type: 'textarea', help: 'text' }
+    ]
   },
 
   {

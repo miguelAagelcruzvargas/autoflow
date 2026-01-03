@@ -1,20 +1,25 @@
+# ⚡ AutoFlow Pro
+
+> **The Ultimate AI-Powered Visual Automation Studio**
+
+Visual automation platform powered by LLMs (Gemini, Groq). Build complex workflows with an infinite canvas, secure execution sandbox, and 50+ integrations.
+
+## 📚 Documentation
+
+Detailed documentation has been moved to the `documentacion/` folder.
+
+👉 **[Read the Full Documentation](./documentacion/README.md)**
+
+---
+
+## � Quick Start
+
+1.  **Install:** `npm install`
+2.  **Env:** Configure `.env` (Supabase, Gemini).
+3.  **Run:** `npm run dev`
+
+---
+
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <p>© 2026 AutoFlow Technologies</p>
 </div>
-
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/drive/1BJxPxufpsSCKaa2-W3qpuXKufNG0vNaP
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`

@@ -1,8 +1,9 @@
-import React from 'react';
-import { Layout, Save, Wand2, LifeBuoy, Globe, Code, FileText, Play, StopCircle, LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import React, { useRef } from 'react';
+import { Layout, Save, Wand2, LifeBuoy, Globe, Code, FileText, Play, StopCircle, LogIn, LogOut, User as UserIcon, GraduationCap } from 'lucide-react';
 import { LanguageCode } from '../types';
 import { LANGUAGES } from '../i18n';
 import type { AuthUser } from '../services/authService';
+import { LanguageModal } from './LanguageModal';
 
 interface HeaderProps {
     t: (key: string) => string;
@@ -20,14 +21,18 @@ interface HeaderProps {
     user: AuthUser | null;
     onShowAuth: () => void;
     onLogout: () => void;
+    onRestartTutorial?: () => void;
+    showLanguageModal: boolean;
+    setShowLanguageModal: (show: boolean) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+export const Header = React.memo<HeaderProps>(({
     t, lang, setLang, showTemplates, setShowTemplates,
     isGuidedMode, setIsGuidedMode, isAutoSaving = true,
     nodesCount, setShowJson, isSimulating, onSimulate,
-    user, onShowAuth, onLogout
+    user, onShowAuth, onLogout, onRestartTutorial, showLanguageModal, setShowLanguageModal
 }) => {
+    const langButtonRef = useRef<HTMLButtonElement>(null);
     return (
         <header className="h-14 border-b border-slate-800 bg-[#0F1116] flex items-center justify-between px-4 sticky top-0 z-50 shadow-sm">
             <div className="flex items-center gap-4">
@@ -79,19 +84,35 @@ export const Header: React.FC<HeaderProps> = ({
                     <span className="hidden sm:inline text-xs font-bold">{t('guidedMode')}</span>
                 </button>
 
-                {/* Language Selector */}
-                <div className="relative group">
-                    <button className="px-3 py-1.5 rounded-md bg-[#181B21] border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white hover:border-indigo-500 transition-all flex items-center gap-2">
-                        <Globe size={14} /> {LANGUAGES.find(l => l.code === lang)?.code.toUpperCase()}
+                {onRestartTutorial && (
+                    <button
+                        onClick={onRestartTutorial}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-purple-500/10 text-purple-400 border border-purple-500/30 hover:bg-purple-500/20"
+                        title="Reiniciar tutorial interactivo"
+                    >
+                        <GraduationCap size={16} />
+                        <span className="hidden sm:inline">Tutorial</span>
                     </button>
-                    <div className="absolute top-full right-0 mt-2 w-max bg-[#181B21] border border-slate-700 rounded-lg shadow-xl overflow-hidden hidden group-hover:block z-[200]">
-                        {LANGUAGES.map(l => (
-                            <button key={l.code} onClick={() => setLang(l.code)} className={`w-full text-left px-4 py-2.5 text-xs hover:bg-indigo-600 hover:text-white transition-colors flex items-center gap-3 whitespace-nowrap ${lang === l.code ? 'bg-indigo-600/20 text-indigo-300' : 'text-slate-300'}`}>
-                                <span className="text-base">{l.flag}</span> <span className="font-medium">{l.name}</span>
-                            </button>
-                        ))}
-                    </div>
+                )}
+
+                {/* Language Selector */}
+                <div className="relative">
+                    <button
+                        ref={langButtonRef}
+                        onClick={() => setShowLanguageModal(!showLanguageModal)}
+                        className="px-3 py-1.5 rounded-md bg-[#181B21] border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white hover:border-indigo-500 transition-all flex items-center gap-2"
+                    >
+                        <Globe size={14} /> {LANGUAGES.find(l => l.code === lang)?.flag} {LANGUAGES.find(l => l.code === lang)?.code.toUpperCase()}
+                    </button>
+                    <LanguageModal
+                        isOpen={showLanguageModal}
+                        onClose={() => setShowLanguageModal(false)}
+                        currentLang={lang}
+                        onSelectLang={setLang}
+                        buttonRef={langButtonRef}
+                    />
                 </div>
+
 
                 <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 mr-2 border-l border-slate-700 pl-3">
                     <Save size={12} /><span>{t('autoSaving')}</span>
@@ -133,4 +154,4 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
         </header>
     )
-}
+});

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Plus, Trash2, CheckCircle, Settings, Box } from 'lucide-react';
 import { NodeInstance, NodeType } from '../types';
 
@@ -36,12 +36,26 @@ const getHandles = (type: NodeType) => {
     return [{ id: 'main', label: null, color: 'bg-slate-400', top: '50%' }];
 };
 
-export const NodeCanvasItem: React.FC<NodeCanvasItemProps> = ({ node, isSelected, onSelect, onDelete, onMouseDown, onConnectStart, onConnectEnd, onQuickAdd, onSmartConfig, isGuidedMode, isDimmed, description, displayName, simulationStatus = 'idle' }) => {
+// Custom comparator for React.memo to prevent re-renders when parent functions change but data doesn't
+const arePropsEqual = (prev: NodeCanvasItemProps, next: NodeCanvasItemProps) => {
+    return (
+        prev.node === next.node &&
+        prev.isSelected === next.isSelected &&
+        prev.isGuidedMode === next.isGuidedMode &&
+        prev.isDimmed === next.isDimmed &&
+        prev.simulationStatus === next.simulationStatus &&
+        prev.description === next.description &&
+        prev.displayName === next.displayName
+        // We intentionally ignore function props (onSelect, etc.) as they are closures that may change reference
+        // but their logic remains stable for the same node ID.
+    );
+};
+
+export const NodeCanvasItem = memo(({ node, isSelected, onSelect, onDelete, onMouseDown, onConnectStart, onConnectEnd, onQuickAdd, onSmartConfig, isGuidedMode, isDimmed, description, displayName, simulationStatus = 'idle' }: NodeCanvasItemProps) => {
     // Fallback to Box icon if node.icon is undefined
     const Icon = node.icon || Box;
     const handles = getHandles(node.type);
 
-    // Use fixed pixel width w-[240px] instead of relative w-60 to avoid font-size scaling issues
     return (
         <div
             className={`absolute w-[240px] h-[72px] group transition-all duration-300 border rounded-xl p-3 shadow-lg backdrop-blur-md select-none z-20 overflow-visible
@@ -53,7 +67,15 @@ export const NodeCanvasItem: React.FC<NodeCanvasItemProps> = ({ node, isSelected
                     ? (isGuidedMode ? 'bg-[#1A1A1A] border-indigo-400 ring-4 ring-indigo-500/40 shadow-[0_0_50px_rgba(99,102,241,0.4)] z-50' : 'bg-[#1A1A1A] border-indigo-500 ring-2 ring-indigo-500/50 shadow-indigo-500/20')
                     : (simulationStatus === 'idle' ? 'bg-[#151921]/90 border-white/5 hover:border-white/20 hover:bg-[#1A1E26]' : '')
                 }`}
-            style={{ left: node.position.x, top: node.position.y }}
+            style={{
+                transform: `translate3d(${node.position.x}px, ${node.position.y}px, 0)`,
+                // Removing explicit left/top to rely fully on transform for layout
+                // But keep them as 0 or unset if absolute positioning requires it. 
+                // Since it's absolute, default is top-left 0,0. 
+                // So transform moves it from origin.
+                left: 0,
+                top: 0
+            }}
             onMouseDown={(e) => onMouseDown(e, node.id)}
             onClick={onSelect}
             onDoubleClick={(e) => { e.stopPropagation(); onSmartConfig(node); }}
@@ -87,8 +109,9 @@ export const NodeCanvasItem: React.FC<NodeCanvasItemProps> = ({ node, isSelected
                 </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="absolute top-2 right-2 flex gap-1 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Action Buttons - DELETE BUTTON ENHANCED */}
+            {/* Always visible if selected, otherwise on hover. Larger click area. */}
+            <div className={`absolute -top-3 -right-3 flex gap-1 pointer-events-auto transition-opacity duration-200 z-50 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                 <button
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => {
@@ -96,9 +119,10 @@ export const NodeCanvasItem: React.FC<NodeCanvasItemProps> = ({ node, isSelected
                         e.preventDefault();
                         onDelete();
                     }}
-                    className="p-1.5 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-lg transition-colors"
+                    className="p-2 bg-[#1A1A1A] border border-white/10 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-full shadow-lg transition-all hover:scale-110"
+                    title="Delete Node (Del)"
                 >
-                    <Trash2 size={14} />
+                    <Trash2 size={16} />
                 </button>
             </div>
 
@@ -113,13 +137,6 @@ export const NodeCanvasItem: React.FC<NodeCanvasItemProps> = ({ node, isSelected
                     </div>
                 </div>
             )}
-
-            {/* Config Indicator - Removed for cleaner look */}
-            {/* {Object.keys(node.config).length > 0 && (
-                <div className="absolute -top-2 -right-2 bg-emerald-600 text-white rounded-full p-0.5 border-2 border-[#151921] z-30">
-                    <CheckCircle size={10} />
-                </div>
-            )} */}
 
             {/* Output Handles */}
             {handles.map(handle => (
@@ -140,4 +157,4 @@ export const NodeCanvasItem: React.FC<NodeCanvasItemProps> = ({ node, isSelected
             ))}
         </div>
     );
-};
+}, arePropsEqual);

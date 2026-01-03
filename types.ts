@@ -28,7 +28,7 @@ export interface Viewport {
 export interface Field {
   name: string;
   label: string;
-  type: 'text' | 'number' | 'select' | 'textarea';
+  type: 'text' | 'number' | 'select' | 'textarea' | 'toggle' | 'json';
   options?: string[];
   placeholder?: string;
   help?: string;

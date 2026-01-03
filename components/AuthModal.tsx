@@ -5,9 +5,10 @@ import { useAuth } from '../contexts/AuthContext';
 interface AuthModalProps {
     isOpen: boolean;
     onClose: () => void;
+    canClose?: boolean;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
+export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, canClose = true }) => {
     const [mode, setMode] = useState<'login' | 'register'>('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -17,6 +18,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     const { login, register } = useAuth();
 
     if (!isOpen) return null;
+
+    const handleBackdropClick = (e: React.MouseEvent) => {
+        if (canClose && e.target === e.currentTarget) {
+            onClose();
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,19 +52,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+            onClick={handleBackdropClick}
+        >
             <div className="bg-[#1A1E26] border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-700">
                     <h2 className="text-xl font-bold text-white">
                         {mode === 'login' ? 'Welcome Back' : 'Create Account'}
                     </h2>
-                    <button
-                        onClick={onClose}
-                        className="text-slate-400 hover:text-white transition-colors p-1"
-                    >
-                        <X size={20} />
-                    </button>
+                    {canClose && (
+                        <button
+                            onClick={onClose}
+                            className="text-slate-400 hover:text-white transition-colors p-1"
+                        >
+                            <X size={20} />
+                        </button>
+                    )}
                 </div>
 
                 {/* Form */}
