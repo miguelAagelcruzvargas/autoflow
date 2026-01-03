@@ -1,4 +1,4 @@
-import React, { Component, ReactNode, ErrorInfo } from 'react';
+import { Component, ReactNode, ErrorInfo } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
 interface Props {
@@ -13,17 +13,20 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-    state: State = {
-        hasError: false,
-        error: null,
-        errorInfo: null
-    };
+    constructor(props: Props) {
+        super(props);
+        this.state = {
+            hasError: false,
+            error: null,
+            errorInfo: null
+        };
+    }
 
-    static getDerivedStateFromError(error: Error): Partial<State> {
+    static getDerivedStateFromError(_error: Error): Partial<State> {
         return { hasError: true };
     }
 
-    componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
         console.error('🚨 Error Boundary Caught:', error, errorInfo);
 
         this.setState({
@@ -32,15 +35,15 @@ export class ErrorBoundary extends Component<Props, State> {
         });
     }
 
-    handleReload = () => {
+    handleReload = (): void => {
         window.location.reload();
     };
 
-    handleGoHome = () => {
+    handleGoHome = (): void => {
         window.location.href = '/';
     };
 
-    handleReset = () => {
+    handleReset = (): void => {
         this.setState({
             hasError: false,
             error: null,
@@ -48,7 +51,7 @@ export class ErrorBoundary extends Component<Props, State> {
         });
     };
 
-    render() {
+    render(): ReactNode {
         if (this.state.hasError) {
             if (this.props.fallbackUI) {
                 return this.props.fallbackUI;
